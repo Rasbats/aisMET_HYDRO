@@ -63,7 +63,6 @@ aisMET_HYDROBase::aisMET_HYDROBase( wxWindow* parent, wxWindowID id, const wxStr
 	this->SetSizer( bSizer10 );
 	this->Layout();
 	bSizer10->Fit( this );
-	m_timer1.SetOwner( this, wxID_ANY );
 
 	this->Centre( wxBOTH );
 
@@ -71,7 +70,6 @@ aisMET_HYDROBase::aisMET_HYDROBase( wxWindow* parent, wxWindowID id, const wxStr
 	this->Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( aisMET_HYDROBase::OnClose ) );
 	m_buttonMessages->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( aisMET_HYDROBase::OnLogging ), NULL, this );
 	m_button7->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( aisMET_HYDROBase::OnTest ), NULL, this );
-	this->Connect( wxID_ANY, wxEVT_TIMER, wxTimerEventHandler( aisMET_HYDROBase::OnTimer ) );
 }
 
 aisMET_HYDROBase::~aisMET_HYDROBase()
@@ -80,7 +78,5 @@ aisMET_HYDROBase::~aisMET_HYDROBase()
 	this->Disconnect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( aisMET_HYDROBase::OnClose ) );
 	m_buttonMessages->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( aisMET_HYDROBase::OnLogging ), NULL, this );
 	m_button7->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( aisMET_HYDROBase::OnTest ), NULL, this );
-	this->Disconnect( wxID_ANY, wxEVT_TIMER, wxTimerEventHandler( aisMET_HYDROBase::OnTimer ) );
 
 }
-

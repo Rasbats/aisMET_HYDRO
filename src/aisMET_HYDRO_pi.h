@@ -67,7 +67,7 @@ class asmMessages;
 #define aisMET_HYDRO_TOOL_POSITION                                               \
     -1 // Request default positioning of toolbar tool
 
-class aisMET_HYDRO_pi : public opencpn_plugin_116 {
+class aisMET_HYDRO_pi : public opencpn_plugin_117 {
 public:
     aisMET_HYDRO_pi(void* ppimgr);
     ~aisMET_HYDRO_pi(void);

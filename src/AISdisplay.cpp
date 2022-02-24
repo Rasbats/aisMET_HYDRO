@@ -29,12 +29,8 @@ AISdisplay::AISdisplay( wxWindow* parent, wxWindowID id, const wxString& title, 
 	m_tbAISPause->SetValue( true );
 	bSizer11->Add( m_tbAISPause, 0, wxALL, 5 );
 
-	m_tbAISList = new wxToggleButton( this, wxID_ANY, _("Show List"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer11->Add( m_tbAISList, 0, wxALL, 5 );
-
 	m_buttonHideDisplay = new wxButton( this, wxID_ANY, _("Hide AIS Log"), wxDefaultPosition, wxDefaultSize, 0 );
 	bSizer11->Add( m_buttonHideDisplay, 0, wxALL, 5 );
-
 
 	bSizer1->Add( bSizer11, 0, wxEXPAND, 5 );
 
@@ -45,14 +41,12 @@ AISdisplay::AISdisplay( wxWindow* parent, wxWindowID id, const wxString& title, 
 	this->Centre( wxBOTH );
 
 	// Connect Events
-	m_tbAISList->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( AISdisplay::OnList ), NULL, this );
 	m_buttonHideDisplay->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( AISdisplay::OnHideDisplay ), NULL, this );
 }
 
 AISdisplay::~AISdisplay()
 {
 	// Disconnect Events
-	m_tbAISList->Disconnect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( AISdisplay::OnList ), NULL, this );
 	m_buttonHideDisplay->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( AISdisplay::OnHideDisplay ), NULL, this );
 
 }

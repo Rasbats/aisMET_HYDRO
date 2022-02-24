@@ -158,14 +158,14 @@ public:
 	  int utc_hour;
 	  int utc_min;
 	  wxString				Description;
-  
+	  string GUID;
 };
 
-WX_DECLARE_HASH_MAP( int, AIS_Target_Data*, wxIntegerHash, wxIntegerEqual, AIS_Target_Hash );
-WX_DECLARE_HASH_MAP( int, wxString, wxIntegerHash, wxIntegerEqual, AIS_Target_Name_Hash );
+//WX_DECLARE_HASH_MAP( int, AIS_Target_Data*, wxIntegerHash, wxIntegerEqual, AIS_Target_Hash );
+//WX_DECLARE_HASH_MAP( int, wxString, wxIntegerHash, wxIntegerEqual, AIS_Target_Name_Hash );
 
-//WX_DECLARE_HASH_MAP( string, AIS_Target_Data*, wxStringHash, wxStringEqual, AIS_Target_Hash );
-//WX_DECLARE_HASH_MAP( string, wxString, wxStringHash, wxStringEqual, AIS_Target_Name_Hash );
+WX_DECLARE_HASH_MAP( wxString, AIS_Target_Data*, wxStringHash, wxStringEqual, AIS_Target_Hash );
+WX_DECLARE_HASH_MAP( string, wxString, wxStringHash, wxStringEqual, AIS_Target_Name_Hash );
 
 
 // An identifier to notify the application when the // work is done #define
@@ -216,73 +216,27 @@ public:
     wxString DateTimeToTimeString(wxDateTime myDT);
     wxString DateTimeToDateString(wxDateTime myDT);
 
-    wxString makeCheckSum(wxString mySentence);
 	Signalling *signalling;
 
     AisMaker* myAIS;
 	AisMaker* myaisMET_HYDRO;
 	AISdisplay* m_pAISdialog;
 	
-
-	bool m_bDisplayStarted;
 	bool m_bPaused;
 	void SetAISMessage(wxString &msg, wxString &sentence);
 	wxString SetaisMET_HYDROMessage(string &msg);
-	void RenderHTMLQuery(AIS_Target_Data *td);
-	wxString BuildQueryResult(AIS_Target_Data *td);
-	AIS_Target_Data *td;
 
     wxTextFile* nmeafile;
 
-    bool m_bUseAis;
-    bool m_bUseFile;
-    wxString m_tMMSI;
-
-    bool m_bAuto;
-    wxDateTime m_GribTimelineTime;
-
-    double myDir;
-
 	AIS_Target_Data*  pTargetData;
-	AIS_Target_Data*  pBridgeData;
 	AIS_Target_Hash* AISTargetList;
-	AIS_Target_Name_Hash* AISTargetNamesC;
-    AIS_Target_Name_Hash* AISTargetNamesNC;
-	AIS_Target_Name_Hash* HashFile;
-
-	int              m_n_targets;
-
-    AIS_Target_Hash *GetTargetList(void) {return AISTargetList;}
-    //AIS_Target_Data *Get_Target_Data_From_HECT(int mmsi);
-
-    AIS_Target_Data* m_pLatestTargetData;
-
-
-	wxString testing;
 	
-    void SetViewPort( PlugIn_ViewPort *vp );
-
 	AIS_Target_Data myTestData;
 	vector<AIS_Target_Data> myTestDataCollection;
-	vector<AIS_Target_Data> myBridgeCollection;
-	vector<AIS_Target_Data> mySignalCollection;
-	vector<AIS_Target_Data> mySignalsFoundCollection;
-	void UpdateAISTargetList(void);
 
 	void CreateControlsMessageList();
-	void OnTimer(wxTimerEvent& event);
-	int  g_tick;
 
-	void OnSelectMessage(wxCommandEvent& event);
-	double CalculatePPM(float scale);
-	double m_vpppm;
-    double m_vpscale;
-
-	wxArrayInt* myHect;
-	
-	bool listYN;
     PlugIn_ViewPort  *m_vp;
-	bool m_baisMET_HYDROHasStarted;
 	asmMessages* m_pASMmessages1;
 	AISdisplay* myAISdisplay;
 	bool m_bHaveMessageList;
@@ -290,8 +244,6 @@ public:
 	bool m_bUpdateTarget;
 
 	wxString m_message;
-
-	void OnCloseList(wxCloseEvent& event);
 
 	wxFileName fn;
 	wxString station_icon_name;
@@ -303,32 +255,24 @@ public:
 	wxString mySentence;
 
 protected:
-    bool m_bNeedsGrib;
 
 private:
 
 	bool m_bUsingTest;
-	
+	wxString s_GUID;
 
 	wxString AIVDM;
 	bool m_bShowaisMET_HYDRO;
 
 	string m_sPayload;
 
-    wxString m_sTimeSentence;
-    wxString m_sTimeID;
-    wxString m_sNmeaTime;
-
     bool dbg;
 
-    bool m_bUseSetTime;
     bool m_bUseStop;
     bool m_bUsePause;
 
     void OnClose(wxCloseEvent& event);
 
-	//void OnAuto(wxCommandEvent& event);
-	void OnMessageList(wxCommandEvent& event);
 	void OnLogging(wxCommandEvent& event);
 	void OnToggleButton(wxCommandEvent& event);
 	bool DecodeForDAC(wxString insentence);
@@ -338,31 +282,8 @@ private:
 
 	wxString MakeDescription(mylibais::Ais8_1_31 myData);
 
-	void getAis8_1_11(string rawPayload);
 	void getAis8_1_31(string rawPayload);
     // void SendAIS(double cse, double spd, double lat, double lon);
-
-    void OnData(wxCommandEvent& event);
-	void JumpTo( wxString lat, wxString lon, int scale);
-    //void GoToStandby();
-
-    void OnFactory(wxCommandEvent& event);
-	void OnMessages(wxCommandEvent& event);
-
-    long m_iHECT;
-
-    virtual void Lock() { routemutex.Lock(); }
-    virtual void Unlock() { routemutex.Unlock(); }
-    wxMutex routemutex;
-
-	
-    bool m_bUsingWind;
-    bool m_bUsingFollow;
-    bool m_bInvalidPolarsFile;
-    bool m_bInvalidGribFile;
-
-	
-
    
 };
 

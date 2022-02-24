@@ -67,7 +67,7 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p) { delete p; }
 //---------------------------------------------------------------------------------------------------------
 
 aisMET_HYDRO_pi::aisMET_HYDRO_pi(void* ppimgr)
-    : opencpn_plugin_116(ppimgr)
+    : opencpn_plugin_117(ppimgr)
 {
     // Create the PlugIn icons
     initialize_images();
@@ -163,9 +163,6 @@ bool aisMET_HYDRO_pi::DeInit(void)
 		//    Record the dialog position
 	if (NULL != m_pDialog) {
 
-		if (m_pDialog->m_timer1.IsRunning()) { // need to stop the timer or crash on exit
-            m_pDialog->m_timer1.Stop();
-        }
 
         // Capture dialog position
         wxPoint p = m_pDialog->GetPosition();
@@ -218,9 +215,9 @@ wxBitmap* aisMET_HYDRO_pi::GetPlugInBitmap() { return &m_panelBitmap; }
 
 wxString aisMET_HYDRO_pi::GetCommonName() { return _("aisMET_HYDRO"); }
 
-wxString aisMET_HYDRO_pi::GetShortDescription() { return _("aisMET_HYDRO player"); }
+wxString aisMET_HYDRO_pi::GetShortDescription() { return _("aisMET_HYDRO"); }
 
-wxString aisMET_HYDRO_pi::GetLongDescription() { return _("Almost a simulator"); }
+wxString aisMET_HYDRO_pi::GetLongDescription() { return _("Displays ais met_hydro data"); }
 
 int aisMET_HYDRO_pi::GetToolbarToolCount(void) { return 1; }
 
@@ -277,6 +274,8 @@ void aisMET_HYDRO_pi::OnToolbarToolCallback(int id)
 
 void aisMET_HYDRO_pi::SetAISSentence(wxString &sentence) {
 
+	// Not being used. SetNMEASentence traps the met_hydro data
+
 	//wxMessageBox(sentence);
 
 	wxString myMsg = sentence;
@@ -331,72 +330,10 @@ void aisMET_HYDRO_pi::SetAISSentence(wxString &sentence) {
 			//if (NULL != m_pDialog)  m_pDialog->m_textCtrlTest->SetValue(myMsg);
 		    return;
 		}
-
-
 	}
 	return;
 }
-/*
-void aisMET_HYDRO_pi::SetAISSentence(wxString &sentence) {
 
-	wxString myMsg;// = parseNMEASentence(mySentence).ToStdString();
-
-	// $GPAPB,A,A,0.10,R,N,V,V,011,M,DEST,011,M,011,M*3C
-
-	wxString token[100];
-	wxString s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11;
-	token[0] = _T("");
-
-	wxMessageBox(myMsg);
-
-	wxStringTokenizer tkz(sentence, wxT(","));
-	int i = 0;
-
-
-   token[0] = tkz.GetNextToken();  // !xxVDx
-
-   token[1] = tkz.GetNextToken();
-   int nsentences = atoi(token[1].mb_str());
-
-  token[2] = tkz.GetNextToken();
-  int iSecond = atoi(token[2].mb_str());
-
-  token[3] = tkz.GetNextToken();
-  int iThird = atoi(token[3].mb_str());
-  // skip 2 fields
-  token[4] = tkz.GetNextToken();
-  token[5] = tkz.GetNextToken();
-
-	if (token[0].Right(3) == _T("VDM")) {
-        
-		s51 = token[5];
-		wxMessageBox(s51);
-
-		if ( iSecond == 1 && iThird == 2) {
-			s51 = token[5];
-			
-			return;
-		}
-
-		if (iSecond == 2 && iThird == 2) {
-			s52 = token[5];
-			s53 = s51 + s52;
-			myMsg = s53;
-			wxMessageBox(s53);
-			
-		}
-		
-		if (token[3] == "") {
-			s5 = token[5];
-			myMsg = s5;
-			
-		}
-
-	}
-
-    if (NULL != m_pDialog) m_pDialog->SetAISMessage(myMsg);
-}
-*/
 bool aisMET_HYDRO_pi::LoadConfig(void)
 {
     wxFileConfig* pConf = (wxFileConfig*)m_pconfig;
@@ -452,9 +389,7 @@ void aisMET_HYDRO_pi::OnaisMET_HYDRODialogClose()
 
 void aisMET_HYDRO_pi::SetNMEASentence(wxString& sentence)
 {
-	
- 	wxString myMsg = sentence;// = parseNMEASentence(mySentence).ToStdString();
-	
+ 	wxString myMsg = sentence;
 
 	wxString token[40];
 	wxString s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11;
@@ -475,9 +410,6 @@ void aisMET_HYDRO_pi::SetNMEASentence(wxString& sentence)
 				if (NULL != m_pDialog) m_pDialog->mySentence = sentence;
 				return;		
 	}
-
-
-
 	
 	return;
 

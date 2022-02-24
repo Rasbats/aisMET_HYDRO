@@ -22,10 +22,7 @@
 #include <wx/image.h>
 #include <wx/icon.h>
 #include <wx/button.h>
-#include <wx/timer.h>
 #include <wx/dialog.h>
-#include <wx/checkbox.h>
-#include <wx/statbox.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -47,36 +44,12 @@ class aisMET_HYDROBase : public wxDialog
 		virtual void OnClose( wxCloseEvent& event ) { event.Skip(); }
 		virtual void OnLogging( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnTest( wxCommandEvent& event ) { event.Skip(); }
-		virtual void OnTimer( wxTimerEvent& event ) { event.Skip(); }
 
 
 	public:
-		wxTimer m_timer1;
 
 		aisMET_HYDROBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("AIS MET_HYDRO"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxDEFAULT_DIALOG_STYLE|wxMINIMIZE_BOX|wxRESIZE_BORDER );
 		~aisMET_HYDROBase();
-
-};
-
-///////////////////////////////////////////////////////////////////////////////
-/// Class aisRXPreferences
-///////////////////////////////////////////////////////////////////////////////
-class aisRXPreferences : public wxDialog
-{
-	private:
-
-	protected:
-		wxStdDialogButtonSizer* m_sdbSizer1;
-		wxButton* m_sdbSizer1OK;
-		wxButton* m_sdbSizer1Cancel;
-
-	public:
-		wxCheckBox* m_cbTransmitAis;
-		wxCheckBox* m_cbAisToFile;
-		wxTextCtrl* m_textCtrlMMSI;
-
-		aisRXPreferences( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Preferences"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxCAPTION|wxRESIZE_BORDER );
-		~aisRXPreferences();
 
 };
 
