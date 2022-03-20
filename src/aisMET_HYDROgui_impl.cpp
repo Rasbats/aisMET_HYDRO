@@ -38,7 +38,7 @@
 #include <memory>
 
 using mylibais::AisMsg;
-using std::unique_ptr;
+
 using namespace mylibais;
 
 
@@ -205,11 +205,34 @@ void Dlg::SetAISMessage(wxString &msg , wxString &sentence)
 	if (m_bPaused) return;
 	
 	m_message = sentence;
+    plugin->m_pDialog->m_textCtrlTest->SetValue(m_message);
 
 	bool m_bGotDAC = DecodeForDAC(msg);
 
 	if (m_bGotDAC) {
-		Decode(msg);
+
+		
+		const char* payload1 = msg.c_str();
+		mylibais::Ais8 myDacFi(payload1, 0);
+		int dac0 = myDacFi.dac;
+		int fi0 = myDacFi.fi;
+		
+		string myMsg = msg.mb_str();
+
+		if (fi0 == 31 && dac0 == 1) {
+			//wxMessageBox("1_31");
+			getAis8_1_31(myMsg);
+		}
+
+		if (fi0 == 26 && dac0 == 1) {
+			//wxMessageBox("1_26");
+			getAis8_1_26(myMsg);
+		}
+
+		if (fi0 == 33 && dac0 == 367) {
+			//wxMessageBox("367_33");
+			getAis8_367_33(myMsg);
+		}
 	}
 }
 
@@ -260,11 +283,10 @@ wxString Dlg::DateTimeToDateString(wxDateTime myDT)
 	return sDay + sMonth + sYear;
 }
 
-
-bool Dlg::DecodeForDAC(wxString insentence)
+wxArrayInt Dlg::DecodeForDACFI(wxString payload)
 {
-
-	string myMsg = std::string(insentence.mb_str());
+	wxArrayInt myDACFI;
+	string myMsg = std::string(payload.mb_str());
     
 	const char* payload1 = myMsg.c_str();
 	mylibais::Ais8 myDacFi(payload1, 0);
@@ -274,21 +296,44 @@ bool Dlg::DecodeForDAC(wxString insentence)
 	//wxMessageBox(len);
 
 	int dac0 = myDacFi.dac;
+	myDACFI.Add(dac0);
+	int fi0 = myDacFi.fi;
+	myDACFI.Add(fi0);
+}
+
+
+bool Dlg::DecodeForDAC(wxString insentence)
+{
+
+	string myMsg = std::string(insentence.mb_str());
+    
+	const char* payload1 = myMsg.c_str();
+	mylibais::Ais8 myDacFi(payload1, 0);
+
+	//int n = strlen(payload1);
+	//wxString len = wxString::Format("%i", n);
+	//wxMessageBox(len);
+
+	int dac0 = myDacFi.dac;
 	wxString outdac0 = wxString::Format("%i", dac0);
 	//wxMessageBox(outdac0);
 	
 	int fi0 = myDacFi.fi;
 	wxString outfi0 = wxString::Format("%i", fi0);
     //wxMessageBox(outfi0);
-	if (fi0 == 31 && dac0 == 1) {
-		//wxMessageBox("here");
 
+	if (fi0 == 31 && dac0 == 1) {
+		return true;
+	} else
+
+	if (fi0 == 26 && dac0 == 1) {
+		return true;
+	} else
+
+	if (fi0 == 33 && dac0 == 367) {
 		return true;
 	}
 
-	if (fi0 == 25 || fi0 == 26 || fi0 == 41) {
-		return false;
-	}
 	else
 		return false;
 
@@ -326,6 +371,13 @@ void Dlg::Decode(wxString sentence)
 			getAis8_1_31(myMsg);
 		}
 	}
+
+	if (fi0 == 33 && dac0 == 367) {
+	
+		getAis8_367_33(myMsg);
+
+	}
+
 	
 }
 
@@ -389,44 +441,62 @@ wxString Dlg::parseNMEASentence(wxString& sentence)
 	return "999";
 }
 
-wxString Dlg::MakeDescription(mylibais::Ais8_1_31 myData) {
+wxString Dlg::MakeDescription(AIS_Data myData) {
 
 	wxString myDescription;
 	wxString cr = "\n";
 	int idefault  = 0;
+
+	myDescription = myData.dacFI + cr;
+
+	if (myData.dacFI == "DAC_FI: 1_26" || myData.dacFI == "DAC_FI: 367_33") {
+		wxString s_SiteID = wxString::Format("%i", myData.site_id);
+		myDescription += "SiteID: " + s_SiteID + cr;
+	}
 	
-	wxString sMMSI = wxString::Format("%i", pTargetData->MMSI);
+	wxString sMMSI = wxString::Format("%i", myData.MMSI);
 	myDescription += "MMSI: " + sMMSI + cr;
 	
 	int dd = myData.utc_day;
-	wxString outdd = wxString::Format("%i", dd);
-	int hr = myData.utc_hour;
-	wxString outhr = wxString::Format("%i", hr);
-	int min = myData.utc_min;
-	wxString outmin = wxString::Format("%i", min);
+	wxString outdd;
+	if (dd < 10) outdd = "0" + wxString::Format("%i", dd);
+	else outdd = wxString::Format("%i", dd);
 
-	wxString ddhhmm = outdd + outhr + outmin;
+	int hr = myData.utc_hour;
+	wxString outhr;
+	if (hr < 10) outhr = "0" + wxString::Format("%i", hr);
+	else outhr = wxString::Format("%i", hr);
+
+	int min = myData.utc_min;
+	wxString outmin;
+	if(min < 10) outmin = "0" + wxString::Format("%i", min);
+	else outmin = wxString::Format("%i", min);
+	
+
+	wxString ddhhmm = "Day: " + outdd + "  " + outhr + outmin + " UTC";
 	string DayHourMinute = std::string(ddhhmm.mb_str());
 
 	myDescription += DayHourMinute + cr;
 
-	int wind_ave = myData.wind_ave;
-	wxString oWind_ave = wxString::Format("%i", wind_ave);
-	idefault = (int)wind_ave;
-	if (idefault == 127) {}
-		//myDescription += "Average wind speed: n/a" + cr;
+	int iwind_ave = myData.wind_speed;
+	wxString wind_speed;
+	if (iwind_ave != 999)
+		wind_speed = wxString::Format("%i", iwind_ave);
 	else
-		myDescription += "Average wind speed: " + oWind_ave + " knots" + cr;
+		wind_speed = "n/a";
 
-	int wind_dir = myData.wind_dir;
-	wxString oWind_dir = wxString::Format("%i", wind_dir);
-	idefault = (int)wind_dir;
-	if (idefault == 360) {}
-		//myDescription += "Average wind speed: n/a" + cr;
+	myDescription += "Average wind speed: " + wind_speed + " knots" + cr;
+
+	int iwind_dir = myData.wind_dir;
+	wxString wind_dir;
+	if (iwind_dir != 999)
+		wind_dir = wxString::Format("%i", iwind_dir);
 	else
-		myDescription += "Average wind direction: " + oWind_dir + " deg" + cr;
+		wind_dir = "n/a";
 
-	float air_press = myData.air_pres;
+	myDescription += "Average wind direction: " + wind_dir + " deg" + cr;
+
+	float air_press = myData.air_press;
 	idefault = (int)air_press;
 	wxString outpress = wxString::Format("%i", idefault);
 	if (idefault == 1311 || idefault == 800) {}
@@ -442,7 +512,7 @@ wxString Dlg::MakeDescription(mylibais::Ais8_1_31 myData) {
 		myDescription += "Surface current spd: " + osurf_cur_speed + cr;
 
 	int water_level = myData.water_level;	
-	if (water_level == 4001) {}
+	if (water_level == 4001 || water_level == 999) {}
 		//myDescription += "Water level: n/a" + cr;
 	else {
 		double wl = (1.0 * water_level / 100) -10.;
@@ -470,15 +540,26 @@ wxString Dlg::MakeDescription(mylibais::Ais8_1_31 myData) {
 
 // ************ Weather (International) **************
 void Dlg::getAis8_1_31(string rawPayload) {
-		
+
 	const char* payload = rawPayload.c_str();
 	mylibais::Ais8_1_31 myMetHydro(payload, 0);
-	
-	int mm = myMetHydro.mmsi;
+		
+	AIS_Data myData;
+	myData.dacFI = "DAC_FI: 1_31";
+	myData.MMSI = myMetHydro.mmsi;
+	myData.lat = myMetHydro.position.lat_deg;
+	myData.lon = myMetHydro.position.lng_deg;
 
-	AisPoint weatherPoint = myMetHydro.position;
-	wxString outLat = wxString::Format("%f", weatherPoint.lat_deg);
-	wxString outLon = wxString::Format("%f", weatherPoint.lng_deg);
+	myData.utc_day = myMetHydro.utc_day;
+	myData.utc_hour = myMetHydro.utc_hour;
+	myData.utc_min = myMetHydro.utc_min;
+
+	myData.water_level = myMetHydro.water_level;
+	myData.wind_dir = myMetHydro.wind_dir;
+	myData.wind_speed = myMetHydro.wind_ave;
+	myData.air_press = myMetHydro.air_pres;
+
+	myData.site_id = 999;
 
 	wxArrayString myWaypoints = GetWaypointGUIDArray();
 	
@@ -488,7 +569,7 @@ void Dlg::getAis8_1_31(string rawPayload) {
 		str[i] = myWaypoints[i];
 		PlugIn_Waypoint  wayPoint;
 		GetSingleWaypoint(str[i], &wayPoint);
-		if (wayPoint.m_lat == weatherPoint.lat_deg && wayPoint.m_lon == weatherPoint.lng_deg) {
+		if (wayPoint.m_lat == myData.lat && wayPoint.m_lon == myData.lon) {
 			guid = wayPoint.m_GUID;
 			AISTargetList->erase(guid);
 			bool d = DeleteSingleWaypoint(guid);
@@ -496,33 +577,182 @@ void Dlg::getAis8_1_31(string rawPayload) {
 		}
 	}
 		
-	pTargetData = new AIS_Target_Data;	
-
-	pTargetData->Lat = weatherPoint.lat_deg;
-	pTargetData->Lon = weatherPoint.lng_deg;
-	pTargetData->Description = MakeDescription(myMetHydro);		
-	pTargetData->MMSI = mm;
-
-	double myLat = pTargetData->Lat;
-	double myLon = pTargetData->Lon;
-		
+	myData.description = MakeDescription(myData);		
+	
 	plugin->m_pDialog->m_textCtrlTest->SetValue(m_message);
-	PlugIn_Waypoint_Ex*  wayPoint = new PlugIn_Waypoint_Ex(myLat, myLon, "", "", "");		
-	wayPoint->m_MarkDescription = pTargetData->Description;
+	PlugIn_Waypoint_Ex*  wayPoint = new PlugIn_Waypoint_Ex(myData.lat, myData.lon, "", "", "");	
+	wayPoint->m_MarkDescription = myData.description;
 	wayPoint->IsNameVisible = false;
-	wxString s_MarkName = wxString::Format("%i", pTargetData->MMSI);
+	wxString s_MarkName = wxString::Format("%i", myData.MMSI);
 	wayPoint->m_MarkName = s_MarkName;
 	wayPoint->IconName = "green-pin";
-
-	s_GUID = wayPoint->m_GUID; 
-	pTargetData->GUID = s_GUID;
-
-	(*AISTargetList)[pTargetData->GUID] = pTargetData;  // update the hash table entry
 
 	AddSingleWaypointEx(wayPoint, false);
 	GetParent()->Refresh();		
 	
 }
+
+void Dlg::getAis8_1_26(string rawPayload) {
+  
+	const char* payload = rawPayload.c_str();	
+	mylibais::Ais8_1_26 my26MetHydro(payload, 0);
+
+	AIS_Data myData;
+	myData.dacFI = "DAC_FI: 1_26";
+	myData.MMSI = my26MetHydro.mmsi;
+	
+	myData.water_level = 999;
+	myData.wind_dir = 999;
+	myData.wind_speed = 999;
+	myData.site_id = 999;
+
+	vector<mylibais::Ais8_1_26_SensorReport *> reports = my26MetHydro.reports;
+
+	for (std::vector <mylibais::Ais8_1_26_SensorReport*>::iterator it = reports.begin();		
+		it != reports.end(); it++) {	
+
+		int type = (*it)->getType();
+		wxString ty = wxString::Format("%i", type);
+		//wxMessageBox(ty);
+		if ((*it)->report_type == AIS8_1_26_SENSOR_WIND) {
+			mylibais::Ais8_1_26_Wind *rpt = dynamic_cast<Ais8_1_26_Wind *>((*it));	
+			myData.wind_dir = rpt->wind_dir;
+			myData.wind_speed = rpt->wind_speed;
+		}
+
+		if ((*it)->report_type == AIS8_1_26_SENSOR_WATER_LEVEL){
+		    mylibais::Ais8_1_26_WaterLevel *rpt = dynamic_cast<Ais8_1_26_WaterLevel *>((*it));	
+			myData.water_level = rpt->level;
+		}
+
+		if ((*it)->report_type == AIS8_1_26_SENSOR_LOCATION) {
+			
+			mylibais::Ais8_1_26_Location *rpt = dynamic_cast<Ais8_1_26_Location *>((*it));
+			AisPoint myLocation = rpt->position;
+			myData.site_id = rpt->site_id;
+
+			myData.utc_day = rpt->utc_day;
+			myData.utc_hour = rpt->utc_hr;
+			myData.utc_min = rpt->utc_min;
+
+			myData.lat = myLocation.lat_deg;
+			myData.lon = myLocation.lng_deg;
+
+			wxArrayString myWaypoints = GetWaypointGUIDArray();
+	
+			wxString str[1000];
+			wxString guid = "";
+			for (unsigned int i = 1; i < myWaypoints.size(); i++) {
+				str[i] = myWaypoints[i];
+				PlugIn_Waypoint  wayPoint;
+				GetSingleWaypoint(str[i], &wayPoint);
+				if (wayPoint.m_lat == myData.lat && wayPoint.m_lon == myData.lon) {
+					guid = wayPoint.m_GUID;
+					AISTargetList->erase(guid);
+					bool d = DeleteSingleWaypoint(guid);
+					break;
+				}
+			}
+		}		
+	}
+	
+	myData.description = MakeDescription(myData);		
+	
+	PlugIn_Waypoint_Ex*  wayPoint = new PlugIn_Waypoint_Ex(myData.lat, myData.lon, "", "", "");
+	wayPoint->m_MarkDescription = myData.description;
+	wayPoint->IsNameVisible = false;
+
+	wxString s_SiteID = wxString::Format("%i", myData.site_id);
+	wxString s_MarkName = s_SiteID;
+
+	wayPoint->m_MarkName = s_MarkName;
+	wayPoint->IconName = "green-pin";
+
+	AddSingleWaypointEx(wayPoint, false);
+	GetParent()->Refresh();
+
+}
+
+
+void Dlg::getAis8_367_33(string rawPayload) {
+
+	const char* payload = rawPayload.c_str();
+	mylibais::Ais8_367_33 my366MetHydro(payload, 0);
+
+	AIS_Data myData;
+	myData.dacFI = "DAC_FI: 367_33";
+	myData.MMSI = my366MetHydro.mmsi;
+
+	myData.water_level = 999;
+	myData.wind_dir = 999;
+	myData.wind_speed = 999;
+	myData.site_id = 999;
+
+	mylibais::Ais8_367_33_SensorReport* myReport;
+
+	for (std::vector<unique_ptr <mylibais::Ais8_367_33_SensorReport>>::iterator it = my366MetHydro.reports.begin();
+		it != my366MetHydro.reports.end(); it++) {
+
+		if ((*it)->report_type == AIS8_367_33_SENSOR_WIND) {
+			mylibais::Ais8_367_33_Wind *rpt = dynamic_cast<Ais8_367_33_Wind *>((*it).get());	
+			myData.wind_dir = rpt->wind_dir;
+			myData.wind_speed = rpt->wind_speed;
+		}
+
+		if ((*it)->report_type == AIS8_367_33_SENSOR_WATER_LEVEL){
+		    mylibais::Ais8_367_33_WaterLevel *rpt = dynamic_cast<Ais8_367_33_WaterLevel *>((*it).get());	
+			myData.water_level = rpt->level;
+		}
+
+		
+		if ((*it)->report_type == AIS8_367_33_SENSOR_LOCATION) {
+			mylibais::Ais8_367_33_Location *rpt = dynamic_cast<Ais8_367_33_Location *>((*it).get());
+			AisPoint myLocation = rpt->position;
+			
+			myData.lat = myLocation.lat_deg;
+			myData.lon = myLocation.lng_deg;
+			myData.site_id = rpt->site_id;
+
+			myData.utc_day = rpt->utc_day;
+			myData.utc_hour = rpt->utc_hr;
+			myData.utc_min = rpt->utc_min;
+
+
+			wxArrayString myWaypoints = GetWaypointGUIDArray();
+	
+			wxString str[1000];
+			wxString guid = "";
+			for (unsigned int i = 1; i < myWaypoints.size(); i++) {
+				str[i] = myWaypoints[i];
+				PlugIn_Waypoint  wayPoint;
+				GetSingleWaypoint(str[i], &wayPoint);
+				if (wayPoint.m_lat == myData.lat && wayPoint.m_lon == myData.lon) {
+					guid = wayPoint.m_GUID;
+					AISTargetList->erase(guid);
+					bool d = DeleteSingleWaypoint(guid);
+					break;
+				}
+			}			
+		}
+	}
+
+	myData.description = MakeDescription(myData);		
+
+	PlugIn_Waypoint_Ex*  wayPoint = new PlugIn_Waypoint_Ex(myData.lat, myData.lon, "", "", "");
+	wayPoint->m_MarkDescription = myData.description;
+	wayPoint->IsNameVisible = false;
+
+	wxString s_SiteID = wxString::Format("%i", myData.site_id);
+	wxString s_MarkName = s_SiteID;
+	wayPoint->m_MarkName = s_MarkName;
+	wayPoint->IconName = "green-pin";
+
+	AddSingleWaypointEx(wayPoint, false);
+	GetParent()->Refresh();
+
+}
+
+
 
 void Dlg::CreateControlsMessageList()
 {

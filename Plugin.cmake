@@ -34,7 +34,7 @@ option(aisMET_HYDRO_USE_SVG "Use SVG graphics" ON)
 # -------  Plugin setup --------
 #
 set(PKG_NAME aisMET_HYDRO_pi)
-set(PKG_VERSION  0.1.0)
+set(PKG_VERSION  0.2.0)
 set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
 
 set(DISPLAY_NAME aisMET_HYDRO)    # Dialogs, installer artifacts, ...
@@ -52,7 +52,7 @@ set(PKG_INFO_URL https://opencpn.org/OpenCPN/plugins/aisMET_HYDRO.html)
 set(SRC
 	src/ais.h
 	src/ais8.cpp
-	src/ais_bitset2.cpp
+	src/ais_bitset.cpp
 	src/AIS_Bitstring.cpp
 	src/AIS_Bitstring.h
 	src/ais.cpp

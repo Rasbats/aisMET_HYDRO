@@ -86,6 +86,34 @@ class asmMessages;
 class AIS_Target_Data;
 class Signalling;
 
+struct AIS_Data {
+	int utc_day;
+	int utc_hour;
+	int utc_min;
+
+	float	air_press;
+	int     MMSI;
+	
+	float	water_level;
+
+	int		wind_dir;
+	int     wind_speed;
+
+	float surf_cur_speed;
+
+	int ice;
+
+	double lat;
+	double lon;
+
+	wxString description;
+	wxString dacFI;
+	int site_id;
+
+};
+
+
+
 // lass rtept;
 class AIS_Target_Data
 {
@@ -152,6 +180,7 @@ public:
 	/***************** weather obs *****/
 	double					  air_press;
 	int                       MMSI;
+
 	/***************** 8_1_31 *****/
 	/********* provide an index*********/
 	  int utc_day;
@@ -254,6 +283,10 @@ public:
 	double initLon;
 	wxString mySentence;
 
+	bool DecodeForDAC(wxString insentence);
+	wxArrayInt DecodeForDACFI(wxString payload);
+	void Decode(wxString sentence);
+
 protected:
 
 private:
@@ -275,15 +308,17 @@ private:
 
 	void OnLogging(wxCommandEvent& event);
 	void OnToggleButton(wxCommandEvent& event);
-	bool DecodeForDAC(wxString insentence);
-	void Decode(wxString sentence);
+	
     void OnTest(wxCommandEvent& event);
 	wxString parseNMEASentence(wxString& sentence);
 
-	wxString MakeDescription(mylibais::Ais8_1_31 myData);
+	wxString MakeDescription(AIS_Data myData);
 
 	void getAis8_1_31(string rawPayload);
     // void SendAIS(double cse, double spd, double lat, double lon);
+	void getAis8_1_26(string rawPayload);
+
+	void getAis8_367_33(string rawPayload);
    
 };
 

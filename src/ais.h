@@ -12,12 +12,14 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <memory>
 
 
 using std::bitset;
 using std::ostream;
 using std::string;
 using std::vector;
+using namespace std;
 
 namespace mylibais {
 
@@ -561,6 +563,559 @@ namespace mylibais {
 
 	  Ais8_1_31(const char *nmea_payload, const size_t pad);
 	};
+
+const size_t AIS8_1_26_REPORT_SIZE = 112;
+
+enum Ais8_1_26_SensorEnum {
+  AIS8_1_26_SENSOR_ERROR = -1,
+  AIS8_1_26_SENSOR_LOCATION = 0,
+  AIS8_1_26_SENSOR_STATION = 1,
+  AIS8_1_26_SENSOR_WIND = 2,
+  AIS8_1_26_SENSOR_WATER_LEVEL = 3,
+  AIS8_1_26_SENSOR_CURR_2D = 4,
+  AIS8_1_26_SENSOR_CURR_3D = 5,
+  AIS8_1_26_SENSOR_HORZ_FLOW = 6,
+  AIS8_1_26_SENSOR_SEA_STATE = 7,
+  AIS8_1_26_SENSOR_SALINITY = 8,
+  AIS8_1_26_SENSOR_WX = 9,
+  AIS8_1_26_SENSOR_AIR_DRAUGHT = 10,
+  AIS8_1_26_SENSOR_RESERVED_11 = 11,
+  AIS8_1_26_SENSOR_RESERVED_12 = 12,
+  AIS8_1_26_SENSOR_RESERVED_13 = 13,
+  AIS8_1_26_SENSOR_RESERVED_14 = 14,
+  AIS8_1_26_SENSOR_RESERVED_15 = 15,
+};
+
+class Ais8_1_26_SensorReport {
+ public:
+  int report_type;
+  int utc_day;
+  int utc_hr;
+  int utc_min;
+  int site_id;  // aka link_id
+
+  virtual Ais8_1_26_SensorEnum getType() const = 0;
+  virtual ~Ais8_1_26_SensorReport() {}
+};
+
+Ais8_1_26_SensorReport*
+ais8_1_26_sensor_report_factory(const AisBitset &bs,
+                                const size_t offset);
+
+class Ais8_1_26_Location : public Ais8_1_26_SensorReport {
+ public:
+  AisPoint position;
+  float z;  // alt in m from MSL
+  int owner;
+  int timeout;
+  int spare;
+
+  Ais8_1_26_Location(const AisBitset &bs, const size_t offset);
+  Ais8_1_26_Location() {}
+  Ais8_1_26_SensorEnum getType() const { return AIS8_1_26_SENSOR_LOCATION; }
+};
+
+class Ais8_1_26_Station : public Ais8_1_26_SensorReport {
+ public:
+  string name;
+  int spare;
+
+  Ais8_1_26_Station(const AisBitset &bs, const size_t offset);
+  Ais8_1_26_Station() {}
+  Ais8_1_26_SensorEnum getType() const {return AIS8_1_26_SENSOR_STATION;}
+};
+
+class Ais8_1_26_Wind : public Ais8_1_26_SensorReport {
+ public:
+  int wind_speed;  // knots
+  int wind_gust;  // knots
+  int wind_dir;
+  int wind_gust_dir;
+  int sensor_type;
+  int wind_forecast;  // knots
+  int wind_gust_forecast;  // knots
+  int wind_dir_forecast;
+  int utc_day_forecast;
+  int utc_hour_forecast;
+  int utc_min_forecast;
+  int duration;
+  int spare;
+
+  Ais8_1_26_Wind(const AisBitset &bs, const size_t offset);
+  Ais8_1_26_Wind() {}
+  Ais8_1_26_SensorEnum getType() const {return AIS8_1_26_SENSOR_WIND;}
+};
+
+class Ais8_1_26_WaterLevel : public Ais8_1_26_SensorReport {
+ public:
+  int type;
+  float level;  // m.  assuming it is being stored at 0.01 m inc.
+  int trend;
+  int vdatum;
+  int sensor_type;
+  int forecast_type;
+  float level_forecast;
+  int utc_day_forecast;
+  int utc_hour_forecast;
+  int utc_min_forecast;
+  int duration;  // minutes
+  int spare;
+
+  Ais8_1_26_WaterLevel(const AisBitset &bs, const size_t offset);
+  Ais8_1_26_WaterLevel() {}
+  Ais8_1_26_SensorEnum getType() const {return AIS8_1_26_SENSOR_WATER_LEVEL;}
+};
+
+class Ais8_1_26_Curr2D_Current {
+ public:
+  float speed;  // knots
+  int dir;
+  int depth;  // m
+};
+
+class Ais8_1_26_Curr2D : public Ais8_1_26_SensorReport {
+ public:
+  Ais8_1_26_Curr2D_Current currents[3];
+  int type;
+  int spare;
+
+  Ais8_1_26_Curr2D(const AisBitset &bs, const size_t offset);
+  Ais8_1_26_Curr2D() {}
+  Ais8_1_26_SensorEnum getType() const {return AIS8_1_26_SENSOR_CURR_2D;}
+};
+
+class Ais8_1_26_Curr3D_Current {
+ public:
+  float north;
+  float east;
+  float up;
+  int depth;  // m
+};
+
+class Ais8_1_26_Curr3D : public Ais8_1_26_SensorReport {
+ public:
+  Ais8_1_26_Curr3D_Current currents[2];
+  int type;
+  int spare;
+
+  Ais8_1_26_Curr3D(const AisBitset &bs, const size_t offset);
+  Ais8_1_26_Curr3D() {}
+  Ais8_1_26_SensorEnum getType() const {return AIS8_1_26_SENSOR_CURR_3D;}
+};
+
+class Ais8_1_26_HorzFlow_Current {
+ public:
+  int bearing;  // deg
+  int dist;  // m
+  float speed;  // knots
+  int dir;  // deg
+  int level;  // m
+};
+
+class Ais8_1_26_HorzFlow : public Ais8_1_26_SensorReport {
+ public:
+  Ais8_1_26_HorzFlow_Current currents[2];
+  int spare;
+
+  Ais8_1_26_HorzFlow(const AisBitset &bs, const size_t offset);
+  Ais8_1_26_HorzFlow() {}
+  Ais8_1_26_SensorEnum getType() const {return AIS8_1_26_SENSOR_HORZ_FLOW;}
+};
+
+class Ais8_1_26_SeaState : public Ais8_1_26_SensorReport {
+ public:
+  float swell_height;
+  int swell_period;  // seconds
+  int swell_dir;  // deg
+  int sea_state;
+  int swell_sensor_type;
+  float water_temp;  // C
+  float water_temp_depth;  // m
+  int water_sensor_type;
+  float wave_height;
+  int wave_period;  // seconds
+  int wave_dir;  // deg
+  int wave_sensor_type;
+  float salinity;
+
+  Ais8_1_26_SeaState(const AisBitset &bs, const size_t offset);
+  Ais8_1_26_SeaState() {}
+  Ais8_1_26_SensorEnum getType() const {return AIS8_1_26_SENSOR_SEA_STATE;}
+};
+
+class Ais8_1_26_Salinity : public Ais8_1_26_SensorReport {
+ public:
+  float water_temp;  // C
+  float conductivity;  // siemens/m
+  float pressure;  // decibars
+  float salinity;  // 0/00 ppt
+  int salinity_type;
+  int sensor_type;
+  int spare[2];
+
+  Ais8_1_26_Salinity(const AisBitset &bs, const size_t offset);
+  Ais8_1_26_Salinity() {}
+  Ais8_1_26_SensorEnum getType() const {return AIS8_1_26_SENSOR_SALINITY;}
+};
+
+class Ais8_1_26_Wx : public Ais8_1_26_SensorReport {
+ public:
+  float air_temp;  // C
+  int air_temp_sensor_type;
+  int precip;
+  float horz_vis;  // nm
+  float dew_point;  // C
+  int dew_point_type;
+  float air_pressure;  // Pascals (Pa).
+  int air_pressure_trend;
+  int air_pressor_type;
+  float salinity;  // 0/00 ppt
+  int spare;
+
+  Ais8_1_26_Wx(const AisBitset &bs, const size_t offset);
+  Ais8_1_26_Wx() {}
+  Ais8_1_26_SensorEnum getType() const {return AIS8_1_26_SENSOR_WX;}
+};
+
+class Ais8_1_26_AirDraught : public Ais8_1_26_SensorReport {
+ public:
+  float draught;
+  float gap;
+  float forecast_gap;
+  int trend;
+  int utc_day_forecast;
+  int utc_hour_forecast;
+  int utc_min_forecast;
+  int spare;
+
+  Ais8_1_26_AirDraught(const AisBitset &bs, const size_t offset);
+  Ais8_1_26_AirDraught() {}
+  Ais8_1_26_SensorEnum getType() const {return AIS8_1_26_SENSOR_AIR_DRAUGHT;}
+};
+
+// IMO Circ 289 Environmental
+class Ais8_1_26 : public Ais8 {
+ public:
+  vector<Ais8_1_26_SensorReport *> reports;
+
+  Ais8_1_26(const char *nmea_payload, const size_t pad);
+  ~Ais8_1_26();
+};
+ostream& operator<< (ostream &o, const Ais8_1_26 &msg);
+
+
+// Environmental Message
+// https://www.e-navigation.nl/content/environmental-message-0
+// https://www.e-navigation.nl/sites/default/files/asm_files/em_version_release_3-23mar15_0.pdf
+const size_t AIS8_367_33_REPORT_SIZE = 112;
+
+enum Ais8_367_33_SensorEnum {
+  AIS8_367_33_SENSOR_ERROR = -1,
+  AIS8_367_33_SENSOR_LOCATION = 0,
+  AIS8_367_33_SENSOR_STATION = 1,
+  AIS8_367_33_SENSOR_WIND = 2,
+  AIS8_367_33_SENSOR_WATER_LEVEL = 3,
+  AIS8_367_33_SENSOR_CURR_2D = 4,
+  AIS8_367_33_SENSOR_CURR_3D = 5,
+  AIS8_367_33_SENSOR_HORZ_FLOW = 6,
+  AIS8_367_33_SENSOR_SEA_STATE = 7,
+  AIS8_367_33_SENSOR_SALINITY = 8,
+  AIS8_367_33_SENSOR_WX = 9,
+  AIS8_367_33_SENSOR_AIR_GAP = 10,
+  AIS8_367_33_SENSOR_WIND_REPORT_2 = 11,
+  AIS8_367_33_SENSOR_RESERVED_12 = 12,
+  AIS8_367_33_SENSOR_RESERVED_13 = 13,
+  AIS8_367_33_SENSOR_RESERVED_14 = 14,
+  AIS8_367_33_SENSOR_RESERVED_15 = 15,
+};
+
+class Ais8_367_33_SensorReport {
+ public:
+  Ais8_367_33_SensorEnum report_type = AIS8_367_33_SENSOR_ERROR;
+  int utc_day = 0;
+  int utc_hr = 0;
+  int utc_min = 0;
+  int site_id = 0;
+
+  virtual Ais8_367_33_SensorEnum getType() const = 0;
+  virtual ~Ais8_367_33_SensorReport() {}
+};
+
+unique_ptr<Ais8_367_33_SensorReport>
+ais8_367_33_sensor_report_factory(const AisBitset &bs,
+                                  const size_t offset);
+
+class Ais8_367_33_Location : public Ais8_367_33_SensorReport {
+ public:
+  int version = 0;
+  AisPoint position = {0.0, 0.0};
+  int precision = 0;
+  int altitude_raw = 0;  // 0.1 Meter
+  float altitude = 0.0;  // Meters
+  int owner = 0;
+  int timeout = 0;
+  int spare2 = 0;
+
+  Ais8_367_33_Location(const AisBitset &bs, const size_t offset);
+  ~Ais8_367_33_Location() {}
+  Ais8_367_33_SensorEnum getType() const override { return AIS8_367_33_SENSOR_LOCATION; }
+};
+
+class Ais8_367_33_Station : public Ais8_367_33_SensorReport {
+ public:
+  std::string name;
+  int spare2 = 0;
+
+  Ais8_367_33_Station(const AisBitset &bs, const size_t offset);
+  ~Ais8_367_33_Station() {}
+  Ais8_367_33_SensorEnum getType() const override {return AIS8_367_33_SENSOR_STATION;}
+};
+
+class Ais8_367_33_Wind : public Ais8_367_33_SensorReport {
+ public:
+  int wind_speed = 0;  // Knots
+  int wind_gust = 0;  // Knots
+  int wind_dir = 0;  // Degrees
+  int wind_gust_dir = 0;  // Degrees
+  int sensor_type = 0;
+  int wind_forecast = 0;  // Knots
+  int wind_gust_forecast = 0;  // Knots
+  int wind_dir_forecast = 0;  // Degrees
+  int utc_day_forecast = 0;
+  int utc_hour_forecast = 0;
+  int utc_min_forecast = 0;
+  int duration = 0;  // Minutes
+  int spare2 = 0;
+
+  Ais8_367_33_Wind(const AisBitset &bs, const size_t offset);
+  ~Ais8_367_33_Wind() {}
+  Ais8_367_33_SensorEnum getType() const override {return AIS8_367_33_SENSOR_WIND;}
+};
+
+class Ais8_367_33_WaterLevel : public Ais8_367_33_SensorReport {
+ public:
+  int type = 0;
+  int level = 0;  // Centimeters
+  int trend = 0;
+  int vdatum = 0;
+  int sensor_type = 0;
+  int forecast_type = 0;
+  int level_forecast = 0;  // Centimeters
+  int utc_day_forecast = 0;
+  int utc_hour_forecast = 0;
+  int utc_min_forecast = 0;
+  int duration = 0;  // Minutes
+  int spare2 = 0;
+
+  Ais8_367_33_WaterLevel(const AisBitset &bs, const size_t offset);
+  ~Ais8_367_33_WaterLevel() {}
+  Ais8_367_33_SensorEnum getType() const override {return AIS8_367_33_SENSOR_WATER_LEVEL;}
+};
+
+class Ais8_367_33_Curr2D_Current {
+ public:
+  int speed_raw = 0;  // 0.1 Knots
+  float speed = 0.0;  // Knots
+  int dir = 0;  // Degrees
+  int depth = 0;  // Meters
+};
+
+class Ais8_367_33_Curr2D : public Ais8_367_33_SensorReport {
+ public:
+  std::array<Ais8_367_33_Curr2D_Current, 3> currents;
+  int type = 0;
+  int spare2 = 0;
+
+  Ais8_367_33_Curr2D(const AisBitset &bs, const size_t offset);
+  ~Ais8_367_33_Curr2D() {}
+  Ais8_367_33_SensorEnum getType() const override {return AIS8_367_33_SENSOR_CURR_2D;}
+};
+
+class Ais8_367_33_Curr3D_Current {
+ public:
+  int north_raw = 0;  // 0.1 knots
+  float north = 0.0;  // Knots
+
+  int east_raw = 0;  // 0.1 knots
+  float east = 0.0;  // Knots
+
+  int up_raw = 0;  // 0.1 knots
+  float up = 0.0;  // Knots
+
+  int depth = 0;  // Meters
+};
+
+class Ais8_367_33_Curr3D : public Ais8_367_33_SensorReport {
+ public:
+  std::array<Ais8_367_33_Curr3D_Current, 2> currents;
+  int type = 0;
+  int spare2 = 0;
+
+  Ais8_367_33_Curr3D(const AisBitset &bs, const size_t offset);
+  ~Ais8_367_33_Curr3D() {}
+  Ais8_367_33_SensorEnum getType() const override {return AIS8_367_33_SENSOR_CURR_3D;}
+};
+
+class Ais8_367_33_HorzFlow_Current {
+ public:
+  int dist = 0;  // Meters
+  int speed_raw = 0;  // 0.1 Knots
+  float speed = 0.0;  // Knots
+  int dir = 0;  // Degrees
+  int level = 0;  // Meters
+};
+
+class Ais8_367_33_HorzFlow : public Ais8_367_33_SensorReport {
+ public:
+  std::array<Ais8_367_33_HorzFlow_Current, 2> currents;
+  int bearing = 0;  // Degrees
+  int type = 0;
+  int spare2 = 0;
+
+  Ais8_367_33_HorzFlow(const AisBitset &bs, const size_t offset);
+  ~Ais8_367_33_HorzFlow() {}
+  Ais8_367_33_SensorEnum getType() const override {return AIS8_367_33_SENSOR_HORZ_FLOW;}
+};
+
+class Ais8_367_33_SeaState : public Ais8_367_33_SensorReport {
+ public:
+  int swell_height_raw = 0;  // 0.1 Meter increments
+  float swell_height = 0.0;  // Meters
+
+  int swell_period = 0;  // Seconds
+  int swell_dir = 0;  // Degrees
+  int sea_state = 0;
+  int swell_sensor_type = 0;
+
+  int water_temp_raw = 0;  // 0.1 degrees C
+  float water_temp = 0.0;  // Celsius
+
+  int water_temp_depth_raw = 0;  // 0.1 Meters
+  float water_temp_depth = 0.0;  // Meters
+
+  int water_sensor_type = 0;
+
+  int wave_height_raw = 0;  // 0.1 Meters
+  float wave_height = 0.0;  // Meters
+
+  int wave_period = 0;  // Seconds
+  int wave_dir = 0;  // Degrees
+  int wave_sensor_type = 0;
+
+  int salinity_raw = 0;  // 0.1%
+  float salinity = 0.0;  // %
+
+  Ais8_367_33_SeaState(const AisBitset &bs, const size_t offset);
+  ~Ais8_367_33_SeaState() {}
+  Ais8_367_33_SensorEnum getType() const override {return AIS8_367_33_SENSOR_SEA_STATE;}
+};
+
+class Ais8_367_33_Salinity : public Ais8_367_33_SensorReport {
+ public:
+  int water_temp_raw = 0;  // 0.1 degrees Celsius
+  float water_temp = 0.0;  // Celsius
+
+  int conductivity_raw = 0;  // 0.01 Siemens/Meter
+  float conductivity = 0.0;  // Siemens/Meter
+
+  int pressure_raw = 0;  // 0.1 decibars
+  float pressure = 0.0;  // decibars
+
+  int salinity_raw = 0;  // 0.1%
+  float salinity = 0.0;  // 0/00 ppt
+
+  int salinity_type = 0;
+  int sensor_type = 0;
+  int spare2[2] = {0, 0};
+
+  Ais8_367_33_Salinity(const AisBitset &bs, const size_t offset);
+  ~Ais8_367_33_Salinity() {}
+  Ais8_367_33_SensorEnum getType() const override {return AIS8_367_33_SENSOR_SALINITY;}
+};
+
+class Ais8_367_33_Wx : public Ais8_367_33_SensorReport {
+ public:
+  int air_temp_raw = 0;  // 0.1 degrees Celsius
+  float air_temp = 0.0;  // Celsius
+
+  int air_temp_sensor_type = 0;
+  int precip = 0;
+
+  int horz_vis_raw = 0;  // 0.1 Nautical Miles
+  float horz_vis = 0.0;  // Nautical Miles
+
+  int dew_point_raw = 0;  // 0.1 degrees Celsius
+  float dew_point = 0.0;  // Celsius
+
+  int dew_point_type = 0;
+
+  int air_pressure_raw = 0;  // 1 hPA
+  int air_pressure = 0;  // Pascals (Pa).
+
+  int air_pressure_trend = 0;
+  int air_pressure_sensor_type = 0;
+
+  int salinity_raw = 0;  // 0.1%
+  float salinity = 0.0;  // %
+
+  int spare2 = 0;
+
+  Ais8_367_33_Wx(const AisBitset &bs, const size_t offset);
+  ~Ais8_367_33_Wx() {}
+  Ais8_367_33_SensorEnum getType() const override {return AIS8_367_33_SENSOR_WX;}
+};
+
+class Ais8_367_33_AirGap : public Ais8_367_33_SensorReport {
+ public:
+  int air_draught = 0;  // Centimeters
+  int air_gap = 0;  // Centimeters
+  int air_gap_trend = 0;
+  int predicted_air_gap = 0;  // Centimeters
+
+  int utc_day_forecast = 0;
+  int utc_hour_forecast = 0;
+  int utc_min_forecast = 0;
+
+  int type = 0;
+  int spare2 = 0;
+
+  Ais8_367_33_AirGap(const AisBitset &bs, const size_t offset);
+  ~Ais8_367_33_AirGap() {}
+  Ais8_367_33_SensorEnum getType() const override {return AIS8_367_33_SENSOR_AIR_GAP;}
+};
+
+class Ais8_367_33_Wind_V2 : public Ais8_367_33_SensorReport {
+ public:
+  int wind_speed = 0;  // Knots
+  int wind_gust = 0;  // Knots
+  int wind_dir = 0;  // Degrees
+  int averaging_time = 0;  // Minutes
+  int sensor_type = 0;
+  int wind_speed_forecast = 0;  // Knots
+  int wind_gust_forecast = 0;  // Knots
+  int wind_dir_forecast = 0;  // Degrees
+
+  int utc_hour_forecast = 0;
+  int utc_min_forecast = 0;
+
+  int duration = 0;  // Minutes
+
+  int spare2 = 0;
+
+  Ais8_367_33_Wind_V2(const AisBitset &bs, const size_t offset);
+  ~Ais8_367_33_Wind_V2() {}
+  Ais8_367_33_SensorEnum getType() const override {return AIS8_367_33_SENSOR_WIND_REPORT_2;}
+};
+
+class Ais8_367_33 : public Ais8 {
+ public:
+  // 1 to 8 sensor reports
+  vector<unique_ptr<Ais8_367_33_SensorReport>> reports;
+
+  Ais8_367_33(const char *nmea_payload, const size_t pad);
+};
+ostream& operator<< (ostream &o, const Ais8_367_33 &msg);
+
 
 } //mylibais
 

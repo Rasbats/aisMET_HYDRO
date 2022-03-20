@@ -122,6 +122,9 @@ public:
 	
 	//
     aisMET_HYDRO_pi* plugin;
+	wxString prevMsg;
+	wxString payload[5];
+	wxString numberOfSentences;
 
 protected:
   
