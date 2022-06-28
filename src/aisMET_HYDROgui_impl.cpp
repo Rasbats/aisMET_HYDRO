@@ -217,7 +217,7 @@ void Dlg::SetAISMessage(wxString &msg , wxString &sentence)
 		int dac0 = myDacFi.dac;
 		int fi0 = myDacFi.fi;
 		
-		string myMsg = msg.mb_str();
+		string myMsg = msg.ToStdString();
 
 		if (fi0 == 31 && dac0 == 1) {
 			//wxMessageBox("1_31");
