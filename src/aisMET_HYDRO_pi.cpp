@@ -275,64 +275,77 @@ void aisMET_HYDRO_pi::OnToolbarToolCallback(int id)
 
 void aisMET_HYDRO_pi::SetAISSentence(wxString &sentence) {
 
-	// Not being used. SetNMEASentence traps the met_hydro data
+wxString myMsg;
+    wxString mySentence = sentence;
+    wxString token[40];
+    wxString s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11;
+    token[0] = _T("");
+    bool isFI;
 
-	//wxMessageBox(sentence);
+    wxStringTokenizer tokenizer(sentence, wxT(","));
 
-	wxString myMsg = sentence;
+    int i = 0;
+    wxString dd;
 
-	wxString token[40];
-	wxString s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11;
-	
-	wxStringTokenizer tokenizer(myMsg, wxT(","));
-	
-	token[0] = tokenizer.GetNextToken().Trim(); // !AIVDM
-	token[1] = tokenizer.GetNextToken();        // 1
-	token[2] = tokenizer.GetNextToken();        // 2
-	token[3] = tokenizer.GetNextToken();        // ,,
-	token[4] = tokenizer.GetNextToken();        // A/B
-	token[5] = tokenizer.GetNextToken();        // > etc
+    while (tokenizer.HasMoreTokens()) {
+        token[i] = tokenizer.GetNextToken();
+        i++;
+    }
+    if (token[0].Right(3) == _T("VDM")) {
 
-	if (token[3].IsSameAs(_T("5"))) {
-		//wxMessageBox("here");
+        //wxMessageBox("test");
 
-	}
+        /*
+        if (NULL != m_pDialog) {
+                isFI = m_pDialog->DecodeForDAC(token[5]);
+                if (isFI) {
+                        numberOfSentences = token[1];
+                        wxMessageBox(numberOfSentences);
 
-	if (token[0].Right(3) == _T("VDM")) {
+                }
+        }*/
+        /*
+                wxArrayInt theDACFI;
+        if (NULL != m_pDialog) theDACFI =  m_pDialog->DecodeForDACFI(token[5]);
 
-		if (token[1].IsSameAs("2")) {
-			if (token[2].IsSameAs("1")) {
-				s51 = token[5];
-				s52 = "";
-				s53 = "";
-				return;
-			}
-		}
+        for (int i = 0; i < theDACFI.size(); i++) {
+ int d = theDACFI[i];
+        dd = wxString::Format("%i", d);
+        wxMessageBox(dd);
+        }
+        */
 
-		if (token[1].IsSameAs("2")){
-			if (token[2].IsSameAs("2")) {
-				if (s52.IsSameAs("")) return;
-				if (s51.IsSameAs("")) return;
+        // if (theDACFI.at(0) == 367 && theDACFI.at(1) == 33) {
+        //	wxMessageBox("got 367_33");
+        // }
 
-				s52 = token[5];
-				s53 = s51.append(s52);
-				s51 = "";
-				s52 = "";
-				//wxMessageBox(s53);
-				//if (NULL != m_pDialog) m_pDialog->m_textCtrlTest->SetValue(myMsg);
-				return;
-			}
-		}
-		
-		if (token[3].IsSameAs("")) {
-			s5 = token[5];
-			s51 = "";
-			s52 = "";
-			//if (NULL != m_pDialog)  m_pDialog->m_textCtrlTest->SetValue(myMsg);
-		    return;
-		}
-	}
-	return;
+        if (token[1] == "2" && token[2] == "1") {
+                        if (m_pDialog)
+                            m_pDialog->DecodeForDAC(token[5]);
+                        if (isFI)
+                            prevMsg = token[5];
+                        return;
+        } else if (token[1] == "2" && token[2] == "2") {
+                        myMsg = prevMsg + token[5];
+                        if (m_pDialog)
+                            m_pDialog->DecodeForDAC(myMsg);
+                        if (isFI) {
+                            if (m_pDialog)
+                                m_pDialog->SetAISMessage(myMsg, mySentence);
+                        }
+                        return;
+        } else if (token[1] == "1" && token[2] == "1") {
+                        s5 = token[5];
+                        if (m_pDialog) {
+                            m_pDialog->DecodeForDAC(token[5]);
+                            m_pDialog->SetAISMessage(s5, mySentence);
+                            m_pDialog->mySentence = mySentence;
+                        }
+
+                        return;
+        }
+    }
+    return;
 }
 
 bool aisMET_HYDRO_pi::LoadConfig(void)
@@ -408,6 +421,8 @@ void aisMET_HYDRO_pi::SetNMEASentence(wxString& sentence)
 	}
 	if (token[0].Right(3) == _T("VDM")) {
 
+        wxMessageBox("test");
+
 		/*
 		if (NULL != m_pDialog) {
 			isFI = m_pDialog->DecodeForDAC(token[5]);
@@ -436,26 +451,27 @@ void aisMET_HYDRO_pi::SetNMEASentence(wxString& sentence)
 
 
 		if (token[1] == "2" && token[2] == "1") {
-			if (NULL != m_pDialog)isFI = m_pDialog->DecodeForDAC(token[5]);
+            if (m_pDialog) m_pDialog->DecodeForDAC(token[5]);
 			if (isFI) prevMsg = token[5];
 			return;
 	    }else
 			if (token[1] =="2" && token[2] == "2") {
 				myMsg = prevMsg + token[5];
-				if (NULL != m_pDialog)isFI = m_pDialog->DecodeForDAC(myMsg);
+				if (m_pDialog) m_pDialog->DecodeForDAC(myMsg);
 				if (isFI) {
-					if (NULL != m_pDialog) m_pDialog->SetAISMessage(myMsg, mySentence);
+					if (m_pDialog) m_pDialog->SetAISMessage(myMsg, mySentence);
 				}
 				return;
 			}
 			else
 				if (token[1] == "1" && token[2] == "1") {
 					s5 = token[5];
-					if (NULL != m_pDialog)isFI = m_pDialog->DecodeForDAC(token[5]);
-					if (isFI) {
-						if (NULL != m_pDialog) m_pDialog->SetAISMessage(s5, mySentence);
-						if (NULL != m_pDialog) m_pDialog->mySentence = mySentence;
-					}
+                                if (m_pDialog) {
+                                        m_pDialog->DecodeForDAC(token[5]);
+                                        m_pDialog->SetAISMessage(s5, mySentence);
+                                        m_pDialog->mySentence = mySentence;
+                                }
+					
 					return;
 			}
 

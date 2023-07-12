@@ -217,7 +217,7 @@ void Dlg::SetAISMessage(wxString &msg , wxString &sentence)
 		int dac0 = myDacFi.dac;
 		int fi0 = myDacFi.fi;
 		
-		string myMsg = msg.ToStdString();
+		string myMsg = msg.mb_str();
 
 		if (fi0 == 31 && dac0 == 1) {
 			//wxMessageBox("1_31");
@@ -306,6 +306,8 @@ bool Dlg::DecodeForDAC(wxString insentence)
 {
 
 	string myMsg = std::string(insentence.mb_str());
+
+	m_textCtrlTest->SetValue(myMsg);
     
 	const char* payload1 = myMsg.c_str();
 	mylibais::Ais8 myDacFi(payload1, 0);
@@ -324,7 +326,9 @@ bool Dlg::DecodeForDAC(wxString insentence)
 
 	if (fi0 == 31 && dac0 == 1) {
 		return true;
-	} else
+	} 
+
+	else
 
 	if (fi0 == 26 && dac0 == 1) {
 		return true;

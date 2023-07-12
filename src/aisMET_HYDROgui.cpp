@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// C++ code generated with wxFormBuilder (version Oct 26 2018)
+// C++ code generated with wxFormBuilder (version 3.10.1-0-g8feb16b3)
 // http://www.wxformbuilder.org/
 //
 // PLEASE DO *NOT* EDIT THIS FILE!
@@ -12,7 +12,7 @@
 aisMET_HYDROBase::aisMET_HYDROBase( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
 	this->SetSizeHints( wxSize( -1,-1 ), wxSize( -1,-1 ) );
-	this->SetFont( wxFont( 10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	this->SetFont( wxFont( 10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 	this->SetBackgroundColour( wxColour( 201, 201, 201 ) );
 
 	wxBoxSizer* bSizer10;
@@ -23,7 +23,7 @@ aisMET_HYDROBase::aisMET_HYDROBase( wxWindow* parent, wxWindowID id, const wxStr
 
 	m_staticText1 = new wxStaticText( this, wxID_ANY, _("Received sentence (For use with Test) :"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText1->Wrap( -1 );
-	m_staticText1->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_staticText1->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 
 	bSizer121->Add( m_staticText1, 0, wxALL, 5 );
 
@@ -47,12 +47,12 @@ aisMET_HYDROBase::aisMET_HYDROBase( wxWindow* parent, wxWindowID id, const wxStr
 	fgSizer82->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 
 	m_buttonMessages = new wxButton( this, wxID_ANY, _("Log"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_buttonMessages->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_buttonMessages->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 
 	fgSizer82->Add( m_buttonMessages, 0, wxALL|wxEXPAND, 5 );
 
 	m_button7 = new wxButton( this, wxID_ANY, _("Test"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_button7->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
+	m_button7->SetFont( wxFont( 12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
 
 	fgSizer82->Add( m_button7, 1, wxALL|wxEXPAND, 2 );
 
@@ -63,6 +63,7 @@ aisMET_HYDROBase::aisMET_HYDROBase( wxWindow* parent, wxWindowID id, const wxStr
 	this->SetSizer( bSizer10 );
 	this->Layout();
 	bSizer10->Fit( this );
+	m_timer1.SetOwner( this, wxID_ANY );
 
 	this->Centre( wxBOTH );
 
@@ -70,6 +71,7 @@ aisMET_HYDROBase::aisMET_HYDROBase( wxWindow* parent, wxWindowID id, const wxStr
 	this->Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( aisMET_HYDROBase::OnClose ) );
 	m_buttonMessages->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( aisMET_HYDROBase::OnLogging ), NULL, this );
 	m_button7->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( aisMET_HYDROBase::OnTest ), NULL, this );
+	this->Connect( wxID_ANY, wxEVT_TIMER, wxTimerEventHandler( aisMET_HYDROBase::OnTimer ) );
 }
 
 aisMET_HYDROBase::~aisMET_HYDROBase()
@@ -78,5 +80,57 @@ aisMET_HYDROBase::~aisMET_HYDROBase()
 	this->Disconnect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( aisMET_HYDROBase::OnClose ) );
 	m_buttonMessages->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( aisMET_HYDROBase::OnLogging ), NULL, this );
 	m_button7->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( aisMET_HYDROBase::OnTest ), NULL, this );
+	this->Disconnect( wxID_ANY, wxEVT_TIMER, wxTimerEventHandler( aisMET_HYDROBase::OnTimer ) );
 
+}
+
+aisRXPreferences::aisRXPreferences( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
+{
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+
+	wxStaticBoxSizer* sbSizer1;
+	sbSizer1 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, _("AIS") ), wxVERTICAL );
+
+	wxFlexGridSizer* fgSizer2;
+	fgSizer2 = new wxFlexGridSizer( 0, 1, 0, 0 );
+	fgSizer2->SetFlexibleDirection( wxBOTH );
+	fgSizer2->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
+
+	m_cbTransmitAis = new wxCheckBox( sbSizer1->GetStaticBox(), wxID_ANY, _("Transmit"), wxDefaultPosition, wxDefaultSize, 0 );
+	fgSizer2->Add( m_cbTransmitAis, 0, wxALL, 5 );
+
+	m_cbAisToFile = new wxCheckBox( sbSizer1->GetStaticBox(), wxID_ANY, _("Save to file"), wxDefaultPosition, wxDefaultSize, 0 );
+	fgSizer2->Add( m_cbAisToFile, 0, wxALL, 5 );
+
+
+	sbSizer1->Add( fgSizer2, 1, wxEXPAND, 5 );
+
+	wxStaticBoxSizer* sbSizer2;
+	sbSizer2 = new wxStaticBoxSizer( new wxStaticBox( sbSizer1->GetStaticBox(), wxID_ANY, _("MMSI") ), wxVERTICAL );
+
+	m_textCtrlMMSI = new wxTextCtrl( sbSizer2->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	sbSizer2->Add( m_textCtrlMMSI, 0, wxALL, 5 );
+
+
+	sbSizer1->Add( sbSizer2, 1, wxEXPAND, 5 );
+
+	m_sdbSizer1 = new wxStdDialogButtonSizer();
+	m_sdbSizer1OK = new wxButton( sbSizer1->GetStaticBox(), wxID_OK );
+	m_sdbSizer1->AddButton( m_sdbSizer1OK );
+	m_sdbSizer1Cancel = new wxButton( sbSizer1->GetStaticBox(), wxID_CANCEL );
+	m_sdbSizer1->AddButton( m_sdbSizer1Cancel );
+	m_sdbSizer1->Realize();
+
+	sbSizer1->Add( m_sdbSizer1, 1, wxEXPAND, 5 );
+
+
+	this->SetSizer( sbSizer1 );
+	this->Layout();
+	sbSizer1->Fit( this );
+
+	this->Centre( wxBOTH );
+}
+
+aisRXPreferences::~aisRXPreferences()
+{
 }
