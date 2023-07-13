@@ -280,7 +280,7 @@ wxString myMsg;
     wxString token[40];
     wxString s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11;
     token[0] = _T("");
-    bool isFI;
+    bool isFI = false;
 
     wxStringTokenizer tokenizer(sentence, wxT(","));
 
@@ -320,18 +320,18 @@ wxString myMsg;
         // }
 
         if (token[1] == "2" && token[2] == "1") {
-                        if (m_pDialog)
-                            m_pDialog->DecodeForDAC(token[5]);
-                        if (isFI)
-                            prevMsg = token[5];
+                        if (m_pDialog) {
+                            isFI = m_pDialog->DecodeForDAC(token[5]);
+                            if (isFI)
+                                prevMsg = token[5];
+                        }
                         return;
         } else if (token[1] == "2" && token[2] == "2") {
                         myMsg = prevMsg + token[5];
-                        if (m_pDialog)
-                            m_pDialog->DecodeForDAC(myMsg);
-                        if (isFI) {
-                            if (m_pDialog)
-                                m_pDialog->SetAISMessage(myMsg, mySentence);
+                        if (m_pDialog) {
+                            isFI = m_pDialog->DecodeForDAC(myMsg);
+                            if (isFI) 
+                                m_pDialog->SetAISMessage(myMsg, mySentence);                            
                         }
                         return;
         } else if (token[1] == "1" && token[2] == "1") {
