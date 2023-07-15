@@ -36,6 +36,7 @@
 #include "signal.h"
 #include "widget.h"
 #include <memory>
+#include <wx/tglbtn.h>
 
 using mylibais::AisMsg;
 
@@ -183,16 +184,10 @@ inline const char * const BoolToString(bool b)
 
 
 void Dlg::OnLogging(wxCommandEvent& event) {
-	
-	if ( NULL == myAISdisplay) {		
-		myAISdisplay = new AISdisplay(this, wxID_ANY, _T("AIS Logging"), wxPoint(20, 20), wxSize(350, 400), wxCAPTION|wxCLOSE_BOX|wxRESIZE_BORDER);
-		myAISdisplay->Show();
-		m_bHaveDisplay = true;
-	}
-
-	if (m_bHaveDisplay) {
-		myAISdisplay->Show();
-	}
+			
+	myAISdisplay = new AISdisplay(this, wxID_ANY, _T("AIS Logging"), wxPoint(20, 20), wxSize(-1, -1), wxCAPTION|wxCLOSE_BOX|wxRESIZE_BORDER);
+	myAISdisplay->Show();
+	m_bHaveDisplay = true;
 }
 
 void Dlg::OnToggleButton(wxCommandEvent& event) {
@@ -206,6 +201,12 @@ void Dlg::SetAISMessage(wxString &msg , wxString &sentence)
 	
 	m_message = sentence;
     plugin->m_pDialog->m_textCtrlTest->SetValue(m_message);
+         if (m_bHaveDisplay) {
+         if (myAISdisplay->m_tbAISPause->GetValue()) {
+			plugin->m_pDialog->myAISdisplay->m_tcAIS->AppendText(sentence);
+
+        }
+        }
 
 	bool m_bGotDAC = DecodeForDAC(msg);
 
@@ -282,7 +283,7 @@ wxString Dlg::DateTimeToDateString(wxDateTime myDT)
 
 	return sDay + sMonth + sYear;
 }
-
+/*
 wxArrayInt Dlg::DecodeForDACFI(wxString payload)
 {
 	wxArrayInt myDACFI;
@@ -300,7 +301,7 @@ wxArrayInt Dlg::DecodeForDACFI(wxString payload)
 	int fi0 = myDacFi.fi;
 	myDACFI.Add(fi0);
 }
-
+*/
 
 bool Dlg::DecodeForDAC(wxString insentence)
 {
@@ -353,35 +354,21 @@ void Dlg::Decode(wxString sentence)
 	mylibais::Ais8 myDacFi(payload1, 0);
 
 	int dac0 = myDacFi.dac;
-	int fi0;
+	int fi0 = myDacFi.fi;
 	if (dac0 == 1) {
 		//wxString outdac0 = wxString::Format("%i", dac0);
 		//wxMessageBox(outdac0);
 
-
-		fi0 = myDacFi.fi;
 		if (fi0 == 31 && dac0 == 1) {
-			wxString outfi0 = wxString::Format("%i", fi0);
-			//wxMessageBox(outfi0);
-			if (m_bHaveDisplay) {
-				if (myAISdisplay->m_tbAISPause->GetValue()) {
-
-					int mm = 0;
-					int ms = 0;
-
-					myAISdisplay->m_tcAIS->AppendText(mySentence);
-				}
-			}
+			//wxString outfi0 = wxString::Format("%i", fi0);
 			getAis8_1_31(myMsg);
 		}
-	}
-
-	if (fi0 == 33 && dac0 == 367) {
-	
-		getAis8_367_33(myMsg);
-
-	}
-
+	}else
+        if (dac0 == 367) {
+                if (fi0 == 33) {
+                        getAis8_367_33(myMsg);
+                }
+        }
 	
 }
 
@@ -692,8 +679,6 @@ void Dlg::getAis8_367_33(string rawPayload) {
 	myData.wind_speed = 999;
 	myData.site_id = 999;
 
-	mylibais::Ais8_367_33_SensorReport* myReport;
-
 	for (std::vector<unique_ptr <mylibais::Ais8_367_33_SensorReport>>::iterator it = my366MetHydro.reports.begin();
 		it != my366MetHydro.reports.end(); it++) {
 
@@ -761,15 +746,11 @@ void Dlg::getAis8_367_33(string rawPayload) {
 void Dlg::CreateControlsMessageList()
 {
 	int width;
-	long lwidth;
-
 	int dx = 20;
 
 	width = dx * 4;
 	if (m_pASMmessages1) {
-		m_pASMmessages1->m_pListCtrlAISTargets->InsertColumn(tlTRK, _("Hectomtr"), wxLIST_FORMAT_LEFT, width);
-		m_pASMmessages1->m_pListCtrlAISTargets->InsertColumn(tlNAME, _("RISindex"), wxLIST_FORMAT_LEFT, width);
-
+		m_pASMmessages1->m_pListCtrlAISTargets->InsertColumn(tlTRK, _("AIS messages"), wxLIST_FORMAT_LEFT, width);
 	}
 }
 

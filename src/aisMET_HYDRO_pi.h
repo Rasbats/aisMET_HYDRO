@@ -93,9 +93,6 @@ public:
     void SetColorScheme(PI_ColorScheme cs);
 	void SetAISSentence(wxString &sentence);
 
-    //    The override PlugIn Methods
-    void SetNMEASentence(wxString& sentence);
-
     //    Other public methods
     void SetaisMET_HYDRODialogX(int x) { m_hr_dialog_x = x; };
     void SetaisMET_HYDRODialogY(int x) { m_hr_dialog_y = x; };

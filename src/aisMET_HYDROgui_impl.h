@@ -118,21 +118,6 @@ struct AIS_Data {
 class AIS_Target_Data
 {
 public:
-	/*
-    AIS_Target_Data();
-    ~AIS_Target_Data();
-
-    wxString BuildQueryResult(void);
-    wxString GetRolloverString(void);
-    wxString Get_vessel_type_string(bool b_short = false);
-    wxString Get_class_string(bool b_short = false);
-    wxString GetFullName( void );
-    wxString GetCountryCode(bool b_CntryLongStr);
-    void Toggle_AIS_CPA(void);
-    void ToggleShowTrack(void);
-    void CloneFrom( AIS_Target_Data* q );
-    */
-
     int                       MID;
     int                       HECT;
     int                       NavStatus;
@@ -202,20 +187,6 @@ WX_DECLARE_HASH_MAP( string, wxString, wxStringHash, wxStringEqual, AIS_Target_N
 
 class AisMaker;
 
-
-// ECE-TRANS-SC3-2006-10e-RIS.pdf - River Information System
-//section(0), type(0), objectnumber(0), hectometre(0), signal(0), orientation(0), impact(0),
-      //light_status(0),spare(0)
-// Signal status
-
-// Decodes the payload of an AIS message and returns an AisMsg instance.
-// Returns a nullptr on failure.
-// The body is the armored text from 1 or more sentences that compose
-// the encoded bits for an AIS message.
-// The fill_bits are the number of pad bits in the last character of the
-// body.  AIS messages are 8-bit aligned and the characters in the armored
-// body are 6-bit aligned.
-
 namespace mylibais {
 
 // Decodes the payload of an AIS message and returns an AisMsg instance.
@@ -284,7 +255,6 @@ public:
 	wxString mySentence;
 
 	bool DecodeForDAC(wxString insentence);
-	wxArrayInt DecodeForDACFI(wxString payload);
 	void Decode(wxString sentence);
 
 protected:

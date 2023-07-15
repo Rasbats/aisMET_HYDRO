@@ -293,31 +293,6 @@ wxString myMsg;
     }
     if (token[0].Right(3) == _T("VDM")) {
 
-        //wxMessageBox("test");
-
-        /*
-        if (NULL != m_pDialog) {
-                isFI = m_pDialog->DecodeForDAC(token[5]);
-                if (isFI) {
-                        numberOfSentences = token[1];
-                        wxMessageBox(numberOfSentences);
-
-                }
-        }*/
-        /*
-                wxArrayInt theDACFI;
-        if (NULL != m_pDialog) theDACFI =  m_pDialog->DecodeForDACFI(token[5]);
-
-        for (int i = 0; i < theDACFI.size(); i++) {
- int d = theDACFI[i];
-        dd = wxString::Format("%i", d);
-        wxMessageBox(dd);
-        }
-        */
-
-        // if (theDACFI.at(0) == 367 && theDACFI.at(1) == 33) {
-        //	wxMessageBox("got 367_33");
-        // }
 
         if (token[1] == "2" && token[2] == "1") {
                         if (m_pDialog) {
@@ -399,82 +374,4 @@ void aisMET_HYDRO_pi::OnaisMET_HYDRODialogClose()
 	RequestRefresh(m_parent_window); // refresh main window
 	
     SaveConfig();   
-}
-
-void aisMET_HYDRO_pi::SetNMEASentence(wxString& sentence)
-{
- 	wxString myMsg;
-	wxString mySentence = sentence;
-	wxString token[40];
-	wxString s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11;
-	token[0] = _T("");
-	bool isFI;
-
-	wxStringTokenizer tokenizer(sentence, wxT(","));
-	
-	int i = 0;
-	wxString dd;
-
-	while (tokenizer.HasMoreTokens()) {
-		token[i] = tokenizer.GetNextToken();
-		i++;
-	}
-	if (token[0].Right(3) == _T("VDM")) {
-
-        wxMessageBox("test");
-
-		/*
-		if (NULL != m_pDialog) {
-			isFI = m_pDialog->DecodeForDAC(token[5]);
-			if (isFI) {
-				numberOfSentences = token[1];
-				wxMessageBox(numberOfSentences);
-
-			}
-		}*/
-		/*
-			wxArrayInt theDACFI;
-		if (NULL != m_pDialog) theDACFI =  m_pDialog->DecodeForDACFI(token[5]);
-		
-		for (int i = 0; i < theDACFI.size(); i++) {
-         int d = theDACFI[i];
-		dd = wxString::Format("%i", d);
-		wxMessageBox(dd);
-		}
-		*/
-		
-		//if (theDACFI.at(0) == 367 && theDACFI.at(1) == 33) {
-		//	wxMessageBox("got 367_33");
-		//}
-
-		
-
-
-		if (token[1] == "2" && token[2] == "1") {
-            if (m_pDialog) m_pDialog->DecodeForDAC(token[5]);
-			if (isFI) prevMsg = token[5];
-			return;
-	    }else
-			if (token[1] =="2" && token[2] == "2") {
-				myMsg = prevMsg + token[5];
-				if (m_pDialog) m_pDialog->DecodeForDAC(myMsg);
-				if (isFI) {
-					if (m_pDialog) m_pDialog->SetAISMessage(myMsg, mySentence);
-				}
-				return;
-			}
-			else
-				if (token[1] == "1" && token[2] == "1") {
-					s5 = token[5];
-                                if (m_pDialog) {
-                                        m_pDialog->DecodeForDAC(token[5]);
-                                        m_pDialog->SetAISMessage(s5, mySentence);
-                                        m_pDialog->mySentence = mySentence;
-                                }
-					
-					return;
-			}
-
-	}
-	return;
 }
