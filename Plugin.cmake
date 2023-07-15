@@ -19,12 +19,12 @@ set(OCPN_TEST_REPO
 )
 set(OCPN_BETA_REPO
     "opencpn/aismet_hydro-beta"
-    CACHE STRING 
+    CACHE STRING
     "Default repository for tagged builds matching 'beta'"
 )
 set(OCPN_RELEASE_REPO
     "opencpn/aismet_hydro-prod"
-    CACHE STRING 
+    CACHE STRING
     "Default repository for tagged builds not matching 'beta'"
 )
 option(aisMET_HYDRO_USE_SVG "Use SVG graphics" ON)
@@ -50,12 +50,12 @@ set(PKG_HOMEPAGE https://github.com/Rasbats/aisMET_HYDRO_pi)
 set(PKG_INFO_URL https://opencpn.org/OpenCPN/plugins/aisMET_HYDRO.html)
 
 set(SRC
-	src/ais.h
-	src/ais8.cpp
-	src/ais_bitset.cpp
-	src/AIS_Bitstring.cpp
-	src/AIS_Bitstring.h
-	src/ais.cpp
+    src/ais.h
+    src/ais8.cpp
+    src/ais_bitset.cpp
+    src/AIS_Bitstring.cpp
+    src/AIS_Bitstring.h
+    src/ais.cpp
     src/AisMaker.cpp
     src/AisMaker.h
     src/aisMET_HYDROgui.cpp
@@ -66,16 +66,16 @@ set(SRC
     src/aisMET_HYDRO_pi.h
     src/icons.cpp
     src/icons.h
-	src/signal.cpp
-	src/signal.h
-	src/widget.cpp
-	src/widget.h
-	src/bbox.cpp
-    src/bbox.h	
-	src/AISdisplay.cpp
-	src/AISdisplay.h
-	src/ASMmessages.cpp
-	src/ASMmessages.h
+    src/signal.cpp
+    src/signal.h
+    src/widget.cpp
+    src/widget.h
+    src/bbox.cpp
+    src/bbox.h
+    src/AISdisplay.cpp
+    src/AISdisplay.h
+    src/ASMmessages.cpp
+    src/ASMmessages.h
 )
 
 set(PKG_API_LIB api-17)  #  A directory in libs/ e. g., api-17 or api-16
