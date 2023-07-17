@@ -22,6 +22,7 @@
 #include <wx/bitmap.h>
 #include <wx/image.h>
 #include <wx/icon.h>
+#include <wx/tglbtn.h>
 #include <wx/timer.h>
 #include <wx/dialog.h>
 #include <wx/checkbox.h>
@@ -40,12 +41,14 @@ class aisMET_HYDROBase : public wxDialog
 	protected:
 		wxStaticText* m_staticText1;
 		wxButton* m_buttonMessages;
-		wxButton* m_button7;
+		wxToggleButton* m_buttonStop;
+		wxToggleButton* m_buttonRemoveWPT;
 
 		// Virtual event handlers, override them in your derived class
 		virtual void OnClose( wxCloseEvent& event ) { event.Skip(); }
 		virtual void OnLogging( wxCommandEvent& event ) { event.Skip(); }
-		virtual void OnTest( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnStopReading( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnRemoveWPT( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnTimer( wxTimerEvent& event ) { event.Skip(); }
 
 

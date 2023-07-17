@@ -54,6 +54,7 @@ AISdisplay::~AISdisplay()
 void AISdisplay::OnHideDisplay(wxCommandEvent& event) {
 
 	this->Hide();
+
 }
 
 void AISdisplay::OnList(wxCommandEvent& event) {

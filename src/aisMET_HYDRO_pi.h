@@ -143,6 +143,9 @@ private:
     int m_leftclick_tool_id;
     bool m_baisMET_HYDROShowIcon;
     bool m_bShowaisMET_HYDRO;
+
+        bool need2;
+
 	
 };
 

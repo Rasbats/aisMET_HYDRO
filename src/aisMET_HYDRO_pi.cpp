@@ -152,7 +152,7 @@ int aisMET_HYDRO_pi::Init(void)
 
     return (WANTS_OVERLAY_CALLBACK | WANTS_OPENGL_OVERLAY_CALLBACK
         | WANTS_TOOLBAR_CALLBACK | INSTALLS_TOOLBAR_TOOL | WANTS_CURSOR_LATLON
-         | WANTS_AIS_SENTENCES  | WANTS_NMEA_SENTENCES 
+         | WANTS_AIS_SENTENCES 
         | WANTS_PLUGIN_MESSAGING | WANTS_CONFIG);
 }
 
@@ -275,7 +275,7 @@ void aisMET_HYDRO_pi::OnToolbarToolCallback(int id)
 
 void aisMET_HYDRO_pi::SetAISSentence(wxString &sentence) {
 
-wxString myMsg;
+    wxString myMsg;
     wxString mySentence = sentence;
     wxString token[40];
     wxString s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11;
@@ -291,34 +291,50 @@ wxString myMsg;
         token[i] = tokenizer.GetNextToken();
         i++;
     }
-    if (token[0].Right(3) == _T("VDM")) {
+    if (token[5].Mid(0, 1) != "8" || token[5].Mid(0, 2) == "88") {
+        return;
+    }
+    if (token[0].Right(3) == "VDM") {
 
 
         if (token[1] == "2" && token[2] == "1") {
+                        need2 = true;
                         if (m_pDialog) {
                             isFI = m_pDialog->DecodeForDAC(token[5]);
                             if (isFI)
                                 prevMsg = token[5];
                         }
                         return;
-        } else if (token[1] == "2" && token[2] == "2") {
+        } 
+        
+        if (token[1] == "2" && token[2] == "2" && need2) { 
                         myMsg = prevMsg + token[5];
                         if (m_pDialog) {
                             isFI = m_pDialog->DecodeForDAC(myMsg);
                             if (isFI) 
                                 m_pDialog->SetAISMessage(myMsg, mySentence);                            
                         }
+                        need2 = false;
                         return;
-        } else if (token[1] == "1" && token[2] == "1") {
+        } 
+        
+        if (token[1] == "1" && token[2] == "1") {
+                        need2 = false;
                         s5 = token[5];
                         if (m_pDialog) {
-                            m_pDialog->DecodeForDAC(token[5]);
+                            m_pDialog->DecodeForDAC(token[5]);                           
                             m_pDialog->SetAISMessage(s5, mySentence);
                             m_pDialog->mySentence = mySentence;
                         }
 
                         return;
         }
+
+        if (token[1] == "2" && token[2] == "2" && !need2) {
+                        need2 = false;
+                        return;
+        }
+
     }
     return;
 }

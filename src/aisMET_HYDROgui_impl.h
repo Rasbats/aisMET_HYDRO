@@ -224,7 +224,7 @@ public:
 	
 	bool m_bPaused;
 	void SetAISMessage(wxString &msg, wxString &sentence);
-	wxString SetaisMET_HYDROMessage(string &msg);
+	//wxString SetaisMET_HYDROMessage(string &msg);
 
     wxTextFile* nmeafile;
 
@@ -267,7 +267,11 @@ private:
 	wxString AIVDM;
 	bool m_bShowaisMET_HYDRO;
 
+	wxString m_sLogMsg;
 	string m_sPayload;
+    wxArrayString m_aMMSI;
+    bool m_bActive;
+    bool m_bStop;
 
     bool dbg;
 
@@ -279,7 +283,10 @@ private:
 	void OnLogging(wxCommandEvent& event);
 	void OnToggleButton(wxCommandEvent& event);
 	
-    void OnTest(wxCommandEvent& event);
+    //void OnTest(wxCommandEvent& event);
+    void OnStopReading(wxCommandEvent& event);
+    void OnRemoveWPT(wxCommandEvent& event);
+        
 	wxString parseNMEASentence(wxString& sentence);
 
 	wxString MakeDescription(AIS_Data myData);

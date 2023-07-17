@@ -37,6 +37,7 @@
 #include "widget.h"
 #include <memory>
 #include <wx/tglbtn.h>
+#include <wx/arrstr.h>
 
 using mylibais::AisMsg;
 
@@ -112,7 +113,9 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title,
 	dbg = false; // for debug output set to true
 
 	m_bPaused = false;
+    m_bStop = false;
 	m_bUsingTest = false;
+    m_bActive = false;
 
 	bool m_bShowaisMET_HYDRO = true;
 	m_bHaveMessageList = false;
@@ -184,10 +187,12 @@ inline const char * const BoolToString(bool b)
 
 
 void Dlg::OnLogging(wxCommandEvent& event) {
-			
-	myAISdisplay = new AISdisplay(this, wxID_ANY, _T("AIS Logging"), wxPoint(20, 20), wxSize(-1, -1), wxCAPTION|wxCLOSE_BOX|wxRESIZE_BORDER);
-	myAISdisplay->Show();
-	m_bHaveDisplay = true;
+    if (!myAISdisplay) {
+		myAISdisplay = new AISdisplay(this, wxID_ANY, _T("AIS Logging"), wxPoint(20, 20), wxSize(-1, -1), wxCAPTION | wxCLOSE_BOX | wxRESIZE_BORDER);		
+    }
+    myAISdisplay->Show();
+    m_bHaveDisplay = true;	 
+
 }
 
 void Dlg::OnToggleButton(wxCommandEvent& event) {
@@ -196,47 +201,49 @@ void Dlg::OnToggleButton(wxCommandEvent& event) {
 
 void Dlg::SetAISMessage(wxString &msg , wxString &sentence)
 {
-		
+    bool m_bGotDAC = false;	
 	if (m_bPaused) return;
-	
-	m_message = sentence;
-    plugin->m_pDialog->m_textCtrlTest->SetValue(m_message);
-         if (m_bHaveDisplay) {
-         if (myAISdisplay->m_tbAISPause->GetValue()) {
-			plugin->m_pDialog->myAISdisplay->m_tcAIS->AppendText(sentence);
+    if (m_bStop) return;
 
-        }
-        }
+    //plugin->m_pDialog->m_textCtrlTest->SetValue(m_message);        
 
-	bool m_bGotDAC = DecodeForDAC(msg);
+	m_bGotDAC = DecodeForDAC(msg);
 
 	if (m_bGotDAC) {
 
-		
+		m_message = sentence;
+
 		const char* payload1 = msg.c_str();
 		mylibais::Ais8 myDacFi(payload1, 0);
 		int dac0 = myDacFi.dac;
 		int fi0 = myDacFi.fi;
-		
-		string myMsg = msg.ToStdString();
+        int id = myDacFi.message_id;
 
-		if (fi0 == 31 && dac0 == 1) {
-			//wxMessageBox("1_31");
-			getAis8_1_31(myMsg);
-		}
+		//myDacFi.mmsi
+        //wxString myId = wxString::Format("%i", id);
 
-		if (fi0 == 26 && dac0 == 1) {
-			//wxMessageBox("1_26");
-			getAis8_1_26(myMsg);
-		}
 
-		if (fi0 == 33 && dac0 == 367) {
-			//wxMessageBox("367_33");
-			getAis8_367_33(myMsg);
+							string myMsg = msg.ToStdString();
+
+							if (fi0 == 31 && dac0 == 1)  {
+									// wxMessageBox("1_31");
+									getAis8_1_31(myMsg);
+							}
+
+							if (fi0 == 26 && dac0 == 1) {
+									// wxMessageBox("1_26");
+									getAis8_1_26(myMsg);
+							}
+
+							if (fi0 == 33 && dac0 == 367) {
+									// wxMessageBox("367_33");
+									getAis8_367_33(myMsg);
+							}
+			
 		}
-	}
+	
 }
-
+/*
 wxString Dlg::SetaisMET_HYDROMessage(string &msg) {
 	unique_ptr<AisMsg> myMsg;
 
@@ -256,6 +263,7 @@ wxString Dlg::SetaisMET_HYDROMessage(string &msg) {
 	return outstring;
 	
 }
+*/
 
 void Dlg::OnClose(wxCloseEvent& event)
 {	
@@ -308,10 +316,10 @@ bool Dlg::DecodeForDAC(wxString insentence)
 
 	string myMsg = std::string(insentence.mb_str());
 
-	m_textCtrlTest->SetValue(myMsg);
+	//m_textCtrlTest->SetValue(myMsg);
     
 	const char* payload1 = myMsg.c_str();
-	mylibais::Ais8 myDacFi(payload1, 0);
+	mylibais::Ais8 myDacFi(payload1, 0);	
 
 	//int n = strlen(payload1);
 	//wxString len = wxString::Format("%i", n);
@@ -372,6 +380,7 @@ void Dlg::Decode(wxString sentence)
 	
 }
 
+/*
 void Dlg::OnTest(wxCommandEvent& event)
 {
 	m_bUsingTest = true;
@@ -406,8 +415,50 @@ void Dlg::OnTest(wxCommandEvent& event)
 	if (m_bGotDAC) {
 		Decode(myMsg);
 	}
-	
+}
+*/
+void Dlg::OnStopReading(wxCommandEvent& event) { 
 
+    m_bStop = m_buttonStop->GetValue();
+    if (m_bStop) { 
+		if (m_bActive) {
+            m_buttonRemoveWPT->SetBackgroundColour(wxColour(0, 255, 0));
+            m_buttonRemoveWPT->SetValue(false);
+		}
+		m_buttonStop->SetBackgroundColour(wxColour(255, 0, 0));		
+		m_bPaused = true;
+    } else {
+        if (m_bActive) {
+            m_buttonRemoveWPT->SetBackgroundColour(wxColour(0, 255, 0));
+            m_buttonRemoveWPT->SetValue(false);
+        }
+        m_buttonStop->SetBackgroundColour(wxColour(0, 255, 0));
+        m_bPaused = false;	
+	}
+}
+
+void Dlg::OnRemoveWPT(wxCommandEvent& event) {
+    
+	m_bActive = m_buttonRemoveWPT->GetValue();
+	
+	if (m_bActive) {
+                m_buttonRemoveWPT->SetBackgroundColour(wxColour(255, 0, 0));
+                wxString str[1000];
+                wxString guid;
+				m_bPaused = true;
+                for (unsigned int i = 0; i <= m_aMMSI.size(); i++) {
+
+                        str[i] = m_aMMSI[i];
+                        PlugIn_Waypoint_Ex wayPoint;
+                        bool b = GetSingleWaypointEx(str[i], &wayPoint);                        
+                        guid = wayPoint.m_GUID;
+                        AISTargetList->erase(guid);
+                        bool d = DeleteSingleWaypoint(guid);
+                }
+        } else {
+                m_buttonRemoveWPT->SetBackgroundColour(wxColour(0, 255, 0));
+				m_bPaused = false;
+        }
 }
 
 wxString Dlg::parseNMEASentence(wxString& sentence)
@@ -415,7 +466,7 @@ wxString Dlg::parseNMEASentence(wxString& sentence)
 
 	wxString token[40];
 	wxString s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11;
-	token[0] = _T("");
+	token[0] = "";
 
 	wxStringTokenizer tokenizer(sentence, wxT(","));
 	
@@ -425,7 +476,7 @@ wxString Dlg::parseNMEASentence(wxString& sentence)
 		token[i] = tokenizer.GetNextToken();
 		i++;
 	}
-	if (token[0].Right(3) == _T("VDM")) {
+	if (token[0].Right(3) == "VDM") {
 		return token[5];		
 	}
 	
@@ -471,19 +522,19 @@ wxString Dlg::MakeDescription(AIS_Data myData) {
 
 	int iwind_ave = myData.wind_speed;
 	wxString wind_speed;
-	if (iwind_ave != 999)
-		wind_speed = wxString::Format("%i", iwind_ave);
-	else
+	if (iwind_ave == 999 || iwind_ave == 127)
 		wind_speed = "n/a";
+	else
+		wind_speed = wxString::Format("%i", iwind_ave);
 
 	myDescription += "Average wind speed: " + wind_speed + " knots" + cr;
 
 	int iwind_dir = myData.wind_dir;
 	wxString wind_dir;
-	if (iwind_dir != 999)
-		wind_dir = wxString::Format("%i", iwind_dir);
-	else
+	if (iwind_dir == 999 || iwind_dir == 360)
 		wind_dir = "n/a";
+	else
+		wind_dir = wxString::Format("%i", iwind_dir);
 
 	myDescription += "Average wind direction: " + wind_dir + " deg" + cr;
 
@@ -558,29 +609,39 @@ void Dlg::getAis8_1_31(string rawPayload) {
     wxString guid = "";
 	for (unsigned int i = 1; i < myWaypoints.size(); i++) {
 		str[i] = myWaypoints[i];
-		PlugIn_Waypoint  wayPoint;
-		GetSingleWaypoint(str[i], &wayPoint);
-		if (wayPoint.m_lat == myData.lat && wayPoint.m_lon == myData.lon) {
-			guid = wayPoint.m_GUID;
+		PlugIn_Waypoint_Ex  wayPoint;
+		GetSingleWaypointEx(str[i], &wayPoint);
+        wxString sMMSI = wxString::Format("%i", myData.MMSI);
+		if (wayPoint.m_GUID == sMMSI) {			
 			AISTargetList->erase(guid);
 			bool d = DeleteSingleWaypoint(guid);
 			break;
 		}
 	}
 		
-	myData.description = MakeDescription(myData);		
+	myData.description = MakeDescription(myData);	
+
+	wxString myMMSI = wxString::Format("%i", myData.MMSI);
 	
-	plugin->m_pDialog->m_textCtrlTest->SetValue(m_message);
-	PlugIn_Waypoint_Ex*  wayPoint = new PlugIn_Waypoint_Ex(myData.lat, myData.lon, "", "", "");	
+    PlugIn_Waypoint_Ex* wayPoint = new PlugIn_Waypoint_Ex(myData.lat, myData.lon, "", "", myMMSI);	
 	wayPoint->m_MarkDescription = myData.description;
 	wayPoint->IsNameVisible = false;
-	wxString s_MarkName = wxString::Format("%i", myData.MMSI);
-	wayPoint->m_MarkName = s_MarkName;
+	
+	wayPoint->m_MarkName = myMMSI;
 	wayPoint->IconName = "green-pin";
 
-	AddSingleWaypointEx(wayPoint, false);
-	GetParent()->Refresh();		
-	
+	AddSingleWaypointEx(wayPoint, false);       
+    m_aMMSI.Add(myMMSI);
+
+    plugin->m_pDialog->m_textCtrlTest->SetValue(m_message);
+
+    if (m_bHaveDisplay) {
+        if (myAISdisplay->m_tbAISPause->GetValue()) {
+             plugin->m_pDialog->myAISdisplay->m_tcAIS->AppendText(m_message);
+        }
+    }
+
+	GetParent()->Refresh();			
 }
 
 void Dlg::getAis8_1_26(string rawPayload) {
@@ -635,9 +696,10 @@ void Dlg::getAis8_1_26(string rawPayload) {
 			wxString guid = "";
 			for (unsigned int i = 1; i < myWaypoints.size(); i++) {
 				str[i] = myWaypoints[i];
-				PlugIn_Waypoint  wayPoint;
-				GetSingleWaypoint(str[i], &wayPoint);
-				if (wayPoint.m_lat == myData.lat && wayPoint.m_lon == myData.lon) {
+				PlugIn_Waypoint_Ex  wayPoint;
+				GetSingleWaypointEx(str[i], &wayPoint);                                
+                wxString sMMSI = wxString::Format("%i", myData.MMSI);
+				if (wayPoint.m_GUID == sMMSI) {
 					guid = wayPoint.m_GUID;
 					AISTargetList->erase(guid);
 					bool d = DeleteSingleWaypoint(guid);
@@ -647,19 +709,29 @@ void Dlg::getAis8_1_26(string rawPayload) {
 		}		
 	}
 	
-	myData.description = MakeDescription(myData);		
+	myData.description = MakeDescription(myData);
+    wxString myMMSI = wxString::Format("%i", myData.MMSI);
 	
-	PlugIn_Waypoint_Ex*  wayPoint = new PlugIn_Waypoint_Ex(myData.lat, myData.lon, "", "", "");
+	PlugIn_Waypoint_Ex*  wayPoint = new PlugIn_Waypoint_Ex(myData.lat, myData.lon, "", "", myMMSI);
 	wayPoint->m_MarkDescription = myData.description;
 	wayPoint->IsNameVisible = false;
 
-	wxString s_SiteID = wxString::Format("%i", myData.site_id);
-	wxString s_MarkName = s_SiteID;
-
-	wayPoint->m_MarkName = s_MarkName;
+	wayPoint->m_MarkName = myMMSI;
 	wayPoint->IconName = "green-pin";
 
 	AddSingleWaypointEx(wayPoint, false);
+    m_aMMSI.Add(myMMSI);
+
+    plugin->m_pDialog->m_textCtrlTest->SetValue(m_message);
+
+    if (m_bHaveDisplay) {
+                if (myAISdisplay->m_tbAISPause->GetValue()) {
+                        plugin->m_pDialog->myAISdisplay->m_tcAIS->AppendText(
+                            m_message);
+                }
+    }
+
+
 	GetParent()->Refresh();
 
 }
@@ -713,9 +785,10 @@ void Dlg::getAis8_367_33(string rawPayload) {
 			wxString guid = "";
 			for (unsigned int i = 1; i < myWaypoints.size(); i++) {
 				str[i] = myWaypoints[i];
-				PlugIn_Waypoint  wayPoint;
-				GetSingleWaypoint(str[i], &wayPoint);
-				if (wayPoint.m_lat == myData.lat && wayPoint.m_lon == myData.lon) {
+				PlugIn_Waypoint_Ex  wayPoint;
+				GetSingleWaypointEx(str[i], &wayPoint);
+                wxString sMMSI = wxString::Format("%i", myData.MMSI);
+				if (wayPoint.m_GUID == sMMSI) {
 					guid = wayPoint.m_GUID;
 					AISTargetList->erase(guid);
 					bool d = DeleteSingleWaypoint(guid);
@@ -726,17 +799,28 @@ void Dlg::getAis8_367_33(string rawPayload) {
 	}
 
 	myData.description = MakeDescription(myData);		
+	wxString myMMSI = wxString::Format("%i", myData.MMSI);
 
-	PlugIn_Waypoint_Ex*  wayPoint = new PlugIn_Waypoint_Ex(myData.lat, myData.lon, "", "", "");
+	PlugIn_Waypoint_Ex*  wayPoint = new PlugIn_Waypoint_Ex(myData.lat, myData.lon, "", "", myMMSI);
 	wayPoint->m_MarkDescription = myData.description;
 	wayPoint->IsNameVisible = false;
 
-	wxString s_SiteID = wxString::Format("%i", myData.site_id);
-	wxString s_MarkName = s_SiteID;
-	wayPoint->m_MarkName = s_MarkName;
+	wayPoint->m_MarkName = myMMSI;
 	wayPoint->IconName = "green-pin";
 
 	AddSingleWaypointEx(wayPoint, false);
+    m_aMMSI.Add(myMMSI);
+
+    plugin->m_pDialog->m_textCtrlTest->SetValue(m_message);
+
+    if (m_bHaveDisplay) {
+                if (myAISdisplay->m_tbAISPause->GetValue()) {
+                        plugin->m_pDialog->myAISdisplay->m_tcAIS->AppendText(
+                            m_message);
+                }
+    }
+
+
 	GetParent()->Refresh();
 
 }
