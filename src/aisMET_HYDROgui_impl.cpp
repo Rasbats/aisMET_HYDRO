@@ -598,11 +598,13 @@ void Dlg::getAis8_1_31(string rawPayload)
 
     myData.site_id = 999;
 
+    wxString dash = "_";
+
     wxString myMMSI = wxString::Format("%i", myData.MMSI);
     wxString myLat = wxString::Format("%4.2f", myData.lat);
     wxString myLon = wxString::Format("%5.2f", myData.lon);
 
-    myData.site_ident = myMMSI + myLat + myLon;
+    myData.site_ident = myMMSI + dash + myLat + dash + myLon;
 
     wxArrayString myWaypoints = GetWaypointGUIDArray();
 
