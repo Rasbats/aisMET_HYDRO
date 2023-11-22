@@ -948,7 +948,8 @@ void Dlg::getAis8_367_33(string rawPayload)
             wxString myGUID = myMMSI + "_" + myID;
 
             for (int i = 0; i < the_data.size(); i++) {
-                if (the_data[i].rpt_type == rpt->report_type) {
+                if (the_data[i].rpt_type == rpt->report_type
+                    && the_data[i].site_id == m_id) {
                     the_data.pop_back();
                 }
             }
@@ -1008,7 +1009,8 @@ void Dlg::getAis8_367_33(string rawPayload)
             site_report.site_string = o.str();
 
             for (int i = 0; i < the_data.size(); i++) {
-                if (the_data[i].rpt_type == rpt->report_type) {
+                if (the_data[i].rpt_type == rpt->report_type
+                    && the_data[i].site_id == m_id) {
                     the_data.pop_back();
                 }
             }
@@ -1069,7 +1071,8 @@ void Dlg::getAis8_367_33(string rawPayload)
             site_report.site_string = o.str();
 
             for (int i = 0; i < the_data.size(); i++) {
-                if (the_data[i].rpt_type == rpt->report_type) {
+                if (the_data[i].rpt_type == rpt->report_type
+                    && the_data[i].site_id == m_id) {
 
                     the_data.pop_back();
                 }
@@ -1135,7 +1138,8 @@ void Dlg::getAis8_367_33(string rawPayload)
             wxString myGUID = myMMSI + "_" + myID;
 
             for (int i = 0; i < the_data.size(); i++) {
-                if (the_data[i].rpt_type == rpt->report_type) {
+                if (the_data[i].rpt_type == rpt->report_type
+                    && the_data[i].site_id == m_id) {
 
                     the_data.pop_back();
                 }
