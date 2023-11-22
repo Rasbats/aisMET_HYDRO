@@ -124,9 +124,10 @@ struct AIS_Data {
 struct site_data {
 
   int site_id;
-    string site_string;
+  int rpt_type;
+  string site_string;
   double site_lat;
-    double site_lon;
+  double site_lon;
   
 
 };
@@ -278,6 +279,8 @@ public:
 
     bool DecodeForDAC(wxString insentence);
     void Decode(wxString sentence);
+
+
 
 protected:
 private:

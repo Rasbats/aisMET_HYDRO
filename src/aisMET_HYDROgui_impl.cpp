@@ -207,8 +207,8 @@ void Dlg::SetAISMessage(wxString& msg, wxString& sentence)
         int fi0 = myDacFi.fi;
         int id = myDacFi.message_id;
 
-        //myDacFi.mmsi;
-        // wxString myId = wxString::Format("%i", id);
+        // myDacFi.mmsi;
+        //  wxString myId = wxString::Format("%i", id);
 
         string myMsg = msg.ToStdString();
 
@@ -842,6 +842,7 @@ void Dlg::getAis8_1_26(string rawPayload)
 void Dlg::getAis8_367_33(string rawPayload)
 {
 
+    wxString sensor_data;
     const char* payload = rawPayload.c_str();
     mylibais::Ais8_367_33 my366MetHydro(payload, 0);
 
@@ -880,27 +881,41 @@ void Dlg::getAis8_367_33(string rawPayload)
               << " altitude: " << rpt->altitude << " owner: " << rpt->owner
               << "]";
 
-            site_report.site_id = rpt->site_id + my366MetHydro.mmsi;
-            ;
+            int m_id = rpt->site_id + my366MetHydro.mmsi;
+            site_report.site_id = m_id;
+            site_report.rpt_type = rpt->report_type;
             site_report.site_lat = myLocation.lat_deg;
             site_report.site_lon = myLocation.lng_deg;
-
             site_report.site_string = o.str();
+
+            for (int i = 0; i < the_data.size(); i++) {
+                // remove the old location data
+                if (the_data[i].rpt_type == rpt->report_type
+                    && the_data[i].site_id == m_id) {
+                    the_data.pop_back();
+                }
+            }
+
             the_data.push_back(site_report);
 
             // *********** Make a blank waypoint
 
-            wxString myID = wxString::Format("%i",myData.site_id);
+            wxString myID = wxString::Format("%i", myData.site_id);
             wxString myMMSI = wxString::Format("%i", myData.MMSI);
             wxString myGUID = myMMSI + "_" + myID;
-             wxString myLat
-                = wxString::Format("%4.2f", myData.lat);
-            wxString myLon
-                = wxString::Format("%3.2f", myData.lon);
-            
-            PlugIn_Waypoint_Ex* wayPoint
-                = new PlugIn_Waypoint_Ex(myData.lat, myData.lon, "", "", myGUID);
-            wayPoint->m_MarkDescription = o.str();
+            wxString myLat = wxString::Format("%4.2f", myData.lat);
+            wxString myLon = wxString::Format("%3.2f", myData.lon);
+
+            for (std::vector<site_data>::iterator it = the_data.begin();
+                 it != the_data.end(); ++it) {
+                if (it->site_id == m_id) {
+                    sensor_data = it->site_string;
+                }
+            }
+
+            PlugIn_Waypoint_Ex* wayPoint = new PlugIn_Waypoint_Ex(
+                myData.lat, myData.lon, "", "", myGUID);
+            wayPoint->m_MarkDescription = sensor_data;
             wayPoint->IsNameVisible = false;
 
             wayPoint->m_MarkName = myID;
@@ -908,11 +923,8 @@ void Dlg::getAis8_367_33(string rawPayload)
 
             AddSingleWaypointEx(wayPoint, false);
 
-
-
-
             break;
-        } 
+        }
         case AIS8_367_33_SENSOR_STATION: {
 
             mylibais::Ais8_367_33_Station* rpt
@@ -926,13 +938,22 @@ void Dlg::getAis8_367_33(string rawPayload)
               << " min: " << rpt->utc_min << " site: " << rpt->site_id;
             o << " name: " << rpt->name << "]";
 
-            site_report.site_id = rpt->site_id + my366MetHydro.mmsi;
+            int m_id = rpt->site_id + my366MetHydro.mmsi;
+            site_report.rpt_type = rpt->report_type;
+            site_report.site_id = m_id;
             site_report.site_string = o.str();
-            the_data.push_back(site_report);
 
             wxString myID = wxString::Format("%i", myData.site_id);
             wxString myMMSI = wxString::Format("%i", myData.MMSI);
             wxString myGUID = myMMSI + "_" + myID;
+
+            for (int i = 0; i < the_data.size(); i++) {
+                if (the_data[i].rpt_type == rpt->report_type) {
+                    the_data.pop_back();
+                }
+            }
+
+            the_data.push_back(site_report);
 
             wxArrayString myWaypoints = GetWaypointGUIDArray();
 
@@ -944,7 +965,15 @@ void Dlg::getAis8_367_33(string rawPayload)
                 GetSingleWaypointEx(str[i], &wayPoint);
                 // wxString sMMSI = wxString::Format("%i", myStation_Ident);
                 if (wayPoint.m_GUID == myGUID) {
-                    wayPoint.m_MarkDescription += o.str();
+
+                    for (std::vector<site_data>::iterator it = the_data.begin();
+                         it != the_data.end(); ++it) {
+                        if (it->site_id == m_id) {
+                            sensor_data = it->site_string;
+                        }
+                    }
+
+                    wayPoint.m_MarkDescription += sensor_data;
                     UpdateSingleWaypointEx(&wayPoint);
                 }
             }
@@ -973,8 +1002,17 @@ void Dlg::getAis8_367_33(string rawPayload)
               << " utc_min_forecast: " << rpt->utc_min_forecast
               << " duration: " << rpt->duration << "]";
 
-            site_report.site_id = rpt->site_id + my366MetHydro.mmsi;
+            int m_id = rpt->site_id + my366MetHydro.mmsi;
+            site_report.rpt_type = rpt->report_type;
+            site_report.site_id = m_id;
             site_report.site_string = o.str();
+
+            for (int i = 0; i < the_data.size(); i++) {
+                if (the_data[i].rpt_type == rpt->report_type) {
+                    the_data.pop_back();
+                }
+            }
+
             the_data.push_back(site_report);
 
             wxString myID = wxString::Format("%i", myData.site_id);
@@ -991,7 +1029,14 @@ void Dlg::getAis8_367_33(string rawPayload)
                 GetSingleWaypointEx(str[i], &wayPoint);
                 // wxString sMMSI = wxString::Format("%i", myStation_Ident);
                 if (wayPoint.m_GUID == myGUID) {
-                    wayPoint.m_MarkDescription += o.str();
+                    for (std::vector<site_data>::iterator it = the_data.begin();
+                         it != the_data.end(); ++it) {
+                        if (it->rpt_type == rpt->report_type) {
+                            sensor_data = it->site_string;
+                        }
+                    }
+
+                    wayPoint.m_MarkDescription += sensor_data;
                     UpdateSingleWaypointEx(&wayPoint);
                 }
             }
@@ -1017,8 +1062,19 @@ void Dlg::getAis8_367_33(string rawPayload)
               << " utc_hour_forecast: " << rpt->utc_hour_forecast
               << " utc_min_forecast: " << rpt->utc_min_forecast
               << " duration: " << rpt->duration << "]";
-            site_report.site_id = rpt->site_id + my366MetHydro.mmsi;
+
+            int m_id = rpt->site_id + my366MetHydro.mmsi;
+            site_report.rpt_type = rpt->report_type;
+            site_report.site_id = m_id;
             site_report.site_string = o.str();
+
+            for (int i = 0; i < the_data.size(); i++) {
+                if (the_data[i].rpt_type == rpt->report_type) {
+
+                    the_data.pop_back();
+                }
+            }
+
             the_data.push_back(site_report);
 
             wxString myID = wxString::Format("%i", myData.site_id);
@@ -1035,11 +1091,17 @@ void Dlg::getAis8_367_33(string rawPayload)
                 GetSingleWaypointEx(str[i], &wayPoint);
                 // wxString sMMSI = wxString::Format("%i", myStation_Ident);
                 if (wayPoint.m_GUID == myGUID) {
-                    wayPoint.m_MarkDescription += o.str();
+                    for (std::vector<site_data>::iterator it = the_data.begin();
+                         it != the_data.end(); ++it) {
+                        if (it->rpt_type == rpt->report_type) {
+                            sensor_data = it->site_string;
+                        }
+                    }
+
+                    wayPoint.m_MarkDescription += sensor_data;
                     UpdateSingleWaypointEx(&wayPoint);
                 }
             }
-
 
             break;
         }
@@ -1063,13 +1125,23 @@ void Dlg::getAis8_367_33(string rawPayload)
                 o << " type: " << rpt->type << "]";
             }
 
-            site_report.site_id = rpt->site_id + my366MetHydro.mmsi;
+            int m_id = rpt->site_id + my366MetHydro.mmsi;
+            site_report.rpt_type = rpt->report_type;
+            site_report.site_id = m_id;
             site_report.site_string = o.str();
-            the_data.push_back(site_report);
 
             wxString myID = wxString::Format("%i", myData.site_id);
             wxString myMMSI = wxString::Format("%i", myData.MMSI);
             wxString myGUID = myMMSI + "_" + myID;
+
+            for (int i = 0; i < the_data.size(); i++) {
+                if (the_data[i].rpt_type == rpt->report_type) {
+
+                    the_data.pop_back();
+                }
+            }
+
+            the_data.push_back(site_report);
 
             wxArrayString myWaypoints = GetWaypointGUIDArray();
 
@@ -1081,17 +1153,23 @@ void Dlg::getAis8_367_33(string rawPayload)
                 GetSingleWaypointEx(str[i], &wayPoint);
                 // wxString sMMSI = wxString::Format("%i", myStation_Ident);
                 if (wayPoint.m_GUID == myGUID) {
-                    wayPoint.m_MarkDescription += o.str();
+                    for (std::vector<site_data>::iterator it = the_data.begin();
+                         it != the_data.end(); ++it) {
+                        if (it->rpt_type == rpt->report_type) {
+                            sensor_data = it->site_string;
+                        }
+                    }
+
+                    wayPoint.m_MarkDescription += sensor_data;
                     UpdateSingleWaypointEx(&wayPoint);
                 }
             }
-
 
             break;
         }
         }
     }
-    
+
     /*
     wxArrayString myWaypoints = GetWaypointGUIDArray();
 
