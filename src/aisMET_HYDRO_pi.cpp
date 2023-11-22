@@ -302,7 +302,7 @@ void aisMET_HYDRO_pi::SetAISSentence(wxString &sentence) {
                         if (m_pDialog) {
                             isFI = m_pDialog->DecodeForDAC(token[5]);
                             if (isFI)
-                                prevMsg = token[5];
+                                prevMsg = token[5];                            
                         }
                         return;
         } 

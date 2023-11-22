@@ -652,6 +652,8 @@ Ais8_367_33_Wind_V2::Ais8_367_33_Wind_V2(const AisBitset &bits,
 unique_ptr<Ais8_367_33_SensorReport>
 ais8_367_33_sensor_report_factory(const AisBitset &bits,
                                   const size_t offset) {
+
+
   const Ais8_367_33_SensorEnum rpt_type =
       (Ais8_367_33_SensorEnum)bits.ToUnsignedInt(offset, 4);
 

@@ -65,6 +65,9 @@
 #include "AISdisplay.h"
 #include "ASMmessages.h"
 #include "ocpn_plugin.h"
+#include <sstream> 
+#include <algorithm>
+#include <vector>
 
 #ifdef __WXOSX__
 #define aisMET_HYDRO_DLG_STYLE                                                 \
@@ -93,6 +96,8 @@ struct AIS_Data {
     float air_temp;
 
     int MMSI;
+    int report_type;
+    int reports_size;
 
     float water_level;
 
@@ -100,6 +105,8 @@ struct AIS_Data {
     int wind_speed;
 
     float surf_cur_speed;
+    float speed;
+    int dir;
 
     int ice;
 
@@ -109,7 +116,19 @@ struct AIS_Data {
     wxString description;
     wxString dacFI;
     int site_id;
+    wxString site_name;
+    
     wxString site_ident;
+};
+
+struct site_data {
+
+  int site_id;
+    string site_string;
+  double site_lat;
+    double site_lon;
+  
+
 };
 
 // lass rtept;
@@ -233,6 +252,10 @@ public:
     AIS_Target_Data myTestData;
     vector<AIS_Target_Data> myTestDataCollection;
 
+    site_data site_report;
+    vector<site_data> the_data;
+    int count = 0;
+
     void CreateControlsMessageList();
 
     PlugIn_ViewPort* m_vp;
@@ -287,7 +310,7 @@ private:
     wxString parseNMEASentence(wxString& sentence);
 
     wxString MakeDescription(AIS_Data myData);
-
+    void getAis8_1_11(string rawPayload);
     void getAis8_1_31(string rawPayload);
     // void SendAIS(double cse, double spd, double lat, double lon);
     void getAis8_1_26(string rawPayload);
