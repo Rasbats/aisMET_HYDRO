@@ -127,6 +127,13 @@ Dlg::Dlg(wxWindow* parent, wxWindowID id, const wxString& title,
     wxBitmap* m_panelBitmap = new wxBitmap(panelIcon);
 
     AddCustomWaypointIcon(m_panelBitmap, "green-pin", "MET_HYDRO");
+
+    fn.SetFullName("red-pin.png");
+    path = fn.GetFullPath();
+    wxImage panelIconRed(path);
+    wxBitmap* m_panelBitmapRed = new wxBitmap(panelIconRed);
+
+    AddCustomWaypointIcon(m_panelBitmapRed, "red-pin", "MET_HYDRO_RED");
 }
 
 namespace mylibais {
@@ -919,7 +926,7 @@ void Dlg::getAis8_367_33(string rawPayload)
             wayPoint->IsNameVisible = false;
 
             wayPoint->m_MarkName = myID;
-            wayPoint->IconName = "green-pin";
+            wayPoint->IconName = "red-pin";
 
             AddSingleWaypointEx(wayPoint, false);
 
@@ -1037,7 +1044,7 @@ void Dlg::getAis8_367_33(string rawPayload)
                             sensor_data = it->site_string;
                         }
                     }
-
+                    wayPoint.IconName = "green-pin";
                     wayPoint.m_MarkDescription += sensor_data;
                     UpdateSingleWaypointEx(&wayPoint);
                 }
@@ -1100,7 +1107,7 @@ void Dlg::getAis8_367_33(string rawPayload)
                             sensor_data = it->site_string;
                         }
                     }
-
+                    wayPoint.IconName = "green-pin";
                     wayPoint.m_MarkDescription += sensor_data;
                     UpdateSingleWaypointEx(&wayPoint);
                 }
@@ -1163,7 +1170,7 @@ void Dlg::getAis8_367_33(string rawPayload)
                             sensor_data = it->site_string;
                         }
                     }
-
+                    wayPoint.IconName = "green-pin";
                     wayPoint.m_MarkDescription += sensor_data;
                     UpdateSingleWaypointEx(&wayPoint);
                 }
