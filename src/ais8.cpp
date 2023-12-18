@@ -5,6 +5,7 @@
 #include <iomanip>
 
 #include "ais.h"
+#include <wx/msgdlg.h>
 using namespace std;
 
 namespace mylibais {
@@ -733,6 +734,10 @@ Ais8_367_33::Ais8_367_33(const char *nmea_payload, const size_t pad)
   if (!CheckStatus()) {
     return;
   }
+
+ // wxString nbits = wxString::Format("%i", num_bits);
+ // wxMessageBox(nbits);
+
   if (num_bits  < 168 || num_bits > 952) {
     status = AIS_ERR_BAD_BIT_COUNT;
     return;
@@ -744,7 +749,7 @@ Ais8_367_33::Ais8_367_33(const char *nmea_payload, const size_t pad)
   const size_t extra_bits = (num_bits - report_start) % AIS8_367_33_REPORT_SIZE;
   if (extra_bits > 0) {
     status = AIS_ERR_BAD_BIT_COUNT;
-    return;
+    //return;
   }
 
   for (size_t report_idx = 0; report_idx < num_sensor_reports; report_idx++) {

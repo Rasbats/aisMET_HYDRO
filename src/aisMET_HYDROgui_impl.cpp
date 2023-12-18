@@ -338,6 +338,10 @@ bool Dlg::DecodeForDAC(wxString insentence)
 
         if (fi0 == 33 && dac0 == 367) {
         return true;
+    } else
+
+        if (fi0 == 11 && dac0 == 1) {
+        return true;
     }
 
     else
@@ -364,7 +368,7 @@ void Dlg::Decode(wxString sentence)
         } else if (fi0 == 11 && dac0 == 1) {
             // wxString outfi0 = wxString::Format("%i", fi0);
             getAis8_1_11(myMsg);
-        }
+        } 
 
     } else if (dac0 == 367) {
         if (fi0 == 33) {
@@ -751,6 +755,7 @@ void Dlg::getAis8_1_31(string rawPayload)
     GetParent()->Refresh();
 }
 
+//****************** Environmental ***************************
 void Dlg::getAis8_1_26(string rawPayload)
 {
 
@@ -846,6 +851,8 @@ void Dlg::getAis8_1_26(string rawPayload)
     GetParent()->Refresh();
 }
 
+//****************** US Environmental ***************************
+
 void Dlg::getAis8_367_33(string rawPayload)
 {
 
@@ -929,6 +936,8 @@ void Dlg::getAis8_367_33(string rawPayload)
             wayPoint->IconName = "red-pin";
 
             AddSingleWaypointEx(wayPoint, false);
+
+            m_aMMSI.Add(myGUID);
 
             break;
         }
@@ -1115,6 +1124,68 @@ void Dlg::getAis8_367_33(string rawPayload)
 
             break;
         }
+
+        case AIS8_367_33_SENSOR_CURR_2D: {
+            Ais8_367_33_Curr2D* rpt = dynamic_cast<Ais8_367_33_Curr2D*>(
+                my366MetHydro.reports[report_idx].get());
+
+            myData.site_id = rpt->site_id;
+
+            o << " [report_type: " << rpt->report_type
+              << " day: " << rpt->utc_day << " hour: " << rpt->utc_hr
+              << " min: " << rpt->utc_min << " site: " << rpt->site_id;
+            for (size_t idx = 0; idx < 3; idx++) {
+                o << " [speed: " << rpt->currents[idx].speed
+                  << " dir: " << rpt->currents[idx].dir
+                  << " depth: " << rpt->currents[idx].depth << "]";
+            }
+            o << " type: " << rpt->type << "]";
+
+            int m_id = rpt->site_id + my366MetHydro.mmsi;
+            site_report.rpt_type = rpt->report_type;
+            site_report.site_id = m_id;
+            site_report.site_string = o.str();
+
+            for (int i = 0; i < the_data.size(); i++) {
+                if (the_data[i].rpt_type == rpt->report_type
+                    && the_data[i].site_id == m_id) {
+
+                    the_data.pop_back();
+                }
+            }
+
+            the_data.push_back(site_report);
+
+            wxString myID = wxString::Format("%i", myData.site_id);
+            wxString myMMSI = wxString::Format("%i", myData.MMSI);
+            wxString myGUID = myMMSI + "_" + myID;
+
+            // wxMessageBox(myID);
+            // wxMessageBox(myGUID);
+
+            wxArrayString myWaypoints = GetWaypointGUIDArray();
+
+            wxString str[1000];
+            wxString guid = "";
+            for (unsigned int i = 1; i < myWaypoints.size(); i++) {
+                str[i] = myWaypoints[i];
+                PlugIn_Waypoint_Ex wayPoint;
+                GetSingleWaypointEx(str[i], &wayPoint);
+                // wxString sMMSI = wxString::Format("%i", myStation_Ident);
+                if (wayPoint.m_GUID == myGUID) {
+                    for (std::vector<site_data>::iterator it = the_data.begin();
+                         it != the_data.end(); ++it) {
+                        if (it->rpt_type == rpt->report_type) {
+                            sensor_data = it->site_string;
+                        }
+                    }
+                    wayPoint.IconName = "green-pin";
+                    wayPoint.m_MarkDescription += sensor_data;
+                    UpdateSingleWaypointEx(&wayPoint);
+                }
+            }
+            break;
+        }
         case AIS8_367_33_SENSOR_HORZ_FLOW: {
             Ais8_367_33_HorzFlow* rpt = dynamic_cast<Ais8_367_33_HorzFlow*>(
                 my366MetHydro.reports[report_idx].get());
@@ -1203,7 +1274,6 @@ void Dlg::getAis8_367_33(string rawPayload)
     // MakeDescription(myData);
 
     // wxString myID = myMMSI + myLat + myLon;
-    // m_aMMSI.Add(myID);
 
     plugin->m_pDialog->m_textCtrlTest->SetValue(m_message);
 

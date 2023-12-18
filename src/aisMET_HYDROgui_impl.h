@@ -317,7 +317,6 @@ private:
     void getAis8_1_31(string rawPayload);
     // void SendAIS(double cse, double spd, double lat, double lon);
     void getAis8_1_26(string rawPayload);
-
     void getAis8_367_33(string rawPayload);
 };
 
